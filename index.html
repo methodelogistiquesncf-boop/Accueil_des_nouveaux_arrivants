@@ -4,13 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Onboarding – Accueil des nouveaux arrivants</title>
-<!-- ============================================================
-     OUTIL ONBOARDING – Firebase (Auth + Firestore)
-     - Page login (sans création de compte) + mot de passe oublié
-     - Liste des arrivants + fiche détail (checklist + planning)
-     - Page "Modèle type" : propositions standard modifiables
-       (stockées sous modele/standard/taches et modele/standard/planning)
-============================================================= -->
 <style>
   :root{--bleu:#1976d2;--bleu-f:#4a90d9;--bleu-clair:#ddebf7;--vert:#2e7d32;--rouge:#c62828;--gris:#f4f6f8;--bord:#d0d7de}
   *{box-sizing:border-box}
@@ -39,6 +32,8 @@
   .btn{background:var(--bleu);color:#fff;border:none;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
   .btn:hover{background:#1565c0}
   .btn-clair{background:#ffffff22;border:1px solid #ffffff66}
+  .btn-secondaire{background:#fff;color:#1565c0;border:1px solid var(--bleu);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+  .btn-secondaire:hover{background:#eef5fc}
   .btn-danger{background:#fff;color:var(--rouge);border:1px solid var(--rouge);padding:6px 10px;border-radius:8px;cursor:pointer;font:inherit}
   .btn-gris{background:#e0e0e0;color:#333}
   .btn-icone{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px}
@@ -51,9 +46,11 @@
   .jour{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px 14px;margin-bottom:10px}
   .jour h4{margin:0 0 8px;color:#1565c0}
   .jour ul{list-style:none;margin:0;padding:0}
-  .jour li{display:flex;align-items:center;gap:10px;padding:6px 4px;border-top:1px dashed #e0e6ed}
-  .jour li .heure{background:var(--bleu-clair);color:#1565c0;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;min-width:110px;text-align:center}
-  .jour li .act{flex:1}
+  .jour li{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px dashed #e0e6ed;flex-wrap:wrap}
+  .jour li input[type=date]{border:1px solid var(--bord);border-radius:6px;padding:4px 6px;font:inherit;font-size:13px}
+  .jour li input[type=text]{border:1px solid var(--bord);border-radius:6px;padding:4px 8px;font:inherit;font-size:13px}
+  .jour li .h-in{width:120px}
+  .jour li .a-in{flex:1;min-width:150px}
   .vide{color:#667;font-style:italic}
   .warning{background:#fff3cd;border:1px solid #ffc107;padding:10px 16px;text-align:center;font-weight:600}
   dialog{border:none;border-radius:12px;padding:20px;width:min(420px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
@@ -91,13 +88,12 @@
 </head>
 <body>
 
-<!-- ================= VUE LOGIN (sans création de compte) ================= -->
+<!-- ================= VUE LOGIN ================= -->
 <div id="vue-auth">
   <div class="boite-auth">
     <h2>🛬 Onboarding</h2>
     <p class="sous-titre">Connectez-vous pour accéder à l'outil</p>
     <div id="auth-message" class="message"></div>
-
     <form id="form-login">
       <label>Adresse email<input type="email" id="login-email" required autocomplete="email" placeholder="vous@entreprise.fr"></label>
       <label>Mot de passe<input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••"></label>
@@ -139,6 +135,7 @@
         <div class="droite">
           <div class="jauge"><div id="jauge-plein"></div></div>
           <span id="jauge-texte"></span>
+          <button class="btn-secondaire" id="btn-regenere" title="Remplace les tâches et le planning par le modèle type actuel, dates recalculées sur la date d'arrivée">🔄 Regénérer depuis le modèle</button>
           <button class="btn-danger" id="btn-suppr-arrivant">🗑 Supprimer</button>
         </div>
       </div>
@@ -154,7 +151,7 @@
         <button class="btn" type="submit">Ajouter</button>
       </form>
 
-      <h3>📅 Planning des premiers jours</h3>
+      <h3>📅 Planning des premiers jours (modifiable)</h3>
       <div id="planning"></div>
       <form id="form-slot" class="ligne-form">
         <input type="date" id="slot-date" required />
@@ -168,10 +165,11 @@
     <section id="vue-modele" hidden>
       <button class="btn" id="btn-retour-modele">← Retour à la liste</button>
       <h2>⚙️ Modèle type – propositions standard</h2>
-      <p class="aide">Ces propositions (issues de votre fichier Excel) sont reprises automatiquement à chaque création
-      d'arrivant lorsque la case « Charger les propositions type » est cochée.
-      <b>Décalage (j)</b> = nombre de jours par rapport à J0 (date d'arrivée) : <b>-5</b> = J‑5, <b>0</b> = jour J, <b>1</b> = lendemain.
-      Modifiez les lignes puis cliquez sur 💾 pour enregistrer.</p>
+      <p class="aide">Ces propositions (issues de votre fichier Excel) sont reprises à chaque création d'arrivant
+      (case « Charger les propositions type »). <b>Décalage (j)</b> = jours par rapport à J0 (date d'arrivée) :
+      <b>-5</b> = J‑5, <b>0</b> = jour J, <b>1</b> = lendemain. Modifiez les lignes puis 💾.<br>
+      ⚠️ Les arrivants <b>déjà créés</b> conservent leurs dates : utilisez « 🔄 Regénérer depuis le modèle » sur leur fiche pour les réaligner.</p>
+      <p><button class="btn-secondaire" id="btn-reset-modele">♻️ Réinitialiser le modèle aux valeurs d'origine (Excel)</button></p>
 
       <h3>📋 Tâches type</h3>
       <table class="tableau">
@@ -236,7 +234,6 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-/* Chemins du modèle type (3 segments = collections valides) */
 const COL_MODELE_TACHES   = () => collection(db,"modele","standard","taches");
 const COL_MODELE_PLANNING = () => collection(db,"modele","standard","planning");
 
@@ -363,15 +360,19 @@ function renderChecklist(){
         <button class="btn-icone" data-action="del"  data-id="${d.id}" title="Supprimer">🗑</button></td></tr>`;
   }).join("") || `<tr><td colspan="4" class="vide">Aucune tâche.</td></tr>`;
 }
+/* Planning : chaque créneau est MODIFIABLE (date, horaire, activité) */
 function renderPlanning(docs){
   const parJour = new Map();
   docs.forEach(d => { const s = {id:d.id, ...d.data()}, k = s.date || "sans";
     if(!parJour.has(k)) parJour.set(k, []); parJour.get(k).push(s); });
   $("planning").innerHTML = [...parJour.keys()].sort().map(k => `
     <div class="jour"><h4>📆 ${k==="sans" ? "Sans date" : fmtLong(k)}</h4><ul>
-    ${parJour.get(k).map(s => `<li><span class="heure">${esc(s.heure||"")}</span>
-      <span class="act">${esc(s.activite)}</span>
-      <button class="btn-icone" data-slot-del="${s.id}" title="Supprimer">🗑</button></li>`).join("")}
+    ${parJour.get(k).map(s => `<li>
+      <input type="date" data-pl-date="${s.id}" value="${s.date||""}" title="Date du créneau">
+      <input type="text" class="h-in" data-pl-heure="${s.id}" value="${esc(s.heure||"")}" title="Horaire">
+      <input type="text" class="a-in" data-pl-act="${s.id}" value="${esc(s.activite||"")}" title="Activité">
+      <button class="btn-icone" data-pl-save="${s.id}" title="Enregistrer">💾</button>
+      <button class="btn-icone" data-pl-del="${s.id}" title="Supprimer">🗑</button></li>`).join("")}
     </ul></div>`).join("") || `<p class="vide">Aucun créneau planifié.</p>`;
 }
 function renderModeleTaches(docs){
@@ -435,12 +436,12 @@ function retourListe(){
   $("vue-detail").hidden = true; $("vue-modele").hidden = true; $("vue-liste").hidden = false;
 }
 
-/* ---------- Initialisation du modèle type (une seule fois) ---------- */
+/* ---------- Initialisation / réinitialisation du modèle type ---------- */
 async function assurerModele(){
   try {
     const metaRef = doc(db,"modele","standard");
     const metaSnap = await getDoc(metaRef);
-    if(metaSnap.exists()) return;                       // déjà initialisé
+    if(metaSnap.exists()) return;
     const batch = writeBatch(db);
     DEFAUT_MODELE.taches.forEach((t,i)   => batch.set(doc(COL_MODELE_TACHES()),   { ...t, ordre:i }));
     DEFAUT_MODELE.planning.forEach((s,i) => batch.set(doc(COL_MODELE_PLANNING()), { ...s, ordre:i }));
@@ -448,10 +449,41 @@ async function assurerModele(){
     await batch.commit();
   } catch(err){ console.error("Initialisation du modèle :", err); }
 }
+async function reinitialiserModele(){
+  const [mt, mp] = await Promise.all([ getDocs(COL_MODELE_TACHES()), getDocs(COL_MODELE_PLANNING()) ]);
+  const batch = writeBatch(db);
+  mt.docs.forEach(d => batch.delete(d.ref));
+  mp.docs.forEach(d => batch.delete(d.ref));
+  batch.delete(doc(db,"modele","standard"));
+  await batch.commit();
+  await assurerModele();
+}
 
-/* ---------- Démarrage (après connexion) ----------
-   IMPORTANT : les boutons sont câblés AVANT les abonnements aux données,
-   pour que l'interface reste utilisable même si une requête échoue.      */
+/* ---------- Régénère un arrivant depuis le modèle actuel ---------- */
+async function regenererDepuisModele(){
+  const a = arrivantCourant; if(!a) return;
+  if(!confirm("Remplacer TOUTES les tâches et le planning de cet arrivant par le modèle type actuel,\navec dates recalculées sur la date d'arrivée ?\nLes cochages et modifications actuels seront perdus.")) return;
+  const [mt, mp] = await Promise.all([
+    getDocs(query(COL_MODELE_TACHES(),   orderBy("ordre"))),
+    getDocs(query(COL_MODELE_PLANNING(), orderBy("ordre")))
+  ]);
+  const old = await Promise.all([
+    getDocs(collection(db,"arrivants",idCourant,"taches")),
+    getDocs(collection(db,"arrivants",idCourant,"planning"))
+  ]);
+  const batch = writeBatch(db);
+  old.forEach(s => s.docs.forEach(d => batch.delete(d.ref)));
+  mt.docs.forEach((d,i)=>{ const t = d.data();
+    batch.set(doc(collection(db,"arrivants",idCourant,"taches")),
+      { description:t.description, date:addDays(a.dateArrivee, t.off||0), fait:false, ordre:i }); });
+  mp.docs.forEach((d,i)=>{ const s = d.data();
+    batch.set(doc(collection(db,"arrivants",idCourant,"planning")),
+      { date:addDays(a.dateArrivee, s.off||0), heure:s.heure||"", activite:s.activite||"", ordre:i }); });
+  batch.update(doc(db,"arrivants",idCourant), { nbTaches: mt.docs.length, nbFaites: 0 });
+  await batch.commit();
+}
+
+/* ---------- Démarrage ---------- */
 let appDemarree = false;
 function demarrer(){
   if(appDemarree) return; appDemarree = true;
@@ -460,6 +492,11 @@ function demarrer(){
   $("btn-retour").onclick = retourListe;
   $("btn-retour-modele").onclick = retourListe;
   $("btn-modele").onclick = ouvrirModele;
+  $("btn-regenere").onclick = regenererDepuisModele;
+  $("btn-reset-modele").onclick = async () => {
+    if(!confirm("Réinitialiser le modèle type aux valeurs d'origine (celles de votre Excel) ?\nLes personnalisations actuelles du modèle seront perdues.")) return;
+    await reinitialiserModele();
+  };
   $("btn-nouveau").onclick = () => { $("nv-date").value = toISO(new Date()); $("dlg-nouveau").showModal(); };
   $("btn-annuler").onclick = () => $("dlg-nouveau").close();
   $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
@@ -528,6 +565,7 @@ function demarrer(){
     e.target.reset();
   });
 
+  /* --- Planning : ajout + modification + suppression --- */
   $("form-slot").addEventListener("submit", async e => {
     e.preventDefault();
     await addDoc(collection(db,"arrivants",idCourant,"planning"),
@@ -535,10 +573,20 @@ function demarrer(){
     e.target.reset();
   });
   $("planning").addEventListener("click", async e => {
-    const b = e.target.closest("[data-slot-del]"); if(!b) return;
-    if(confirm("Supprimer ce créneau ?")) await deleteDoc(doc(db,"arrivants",idCourant,"planning",b.dataset.slotDel));
+    const b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.plSave){
+      const id = b.dataset.plSave;
+      const date  = document.querySelector(`[data-pl-date="${id}"]`).value;
+      const heure = document.querySelector(`[data-pl-heure="${id}"]`).value.trim();
+      const act   = document.querySelector(`[data-pl-act="${id}"]`).value.trim();
+      if(act) await updateDoc(doc(db,"arrivants",idCourant,"planning",id), { date, heure, activite: act });
+    }
+    if(b.dataset.plDel){
+      if(confirm("Supprimer ce créneau ?")) await deleteDoc(doc(db,"arrivants",idCourant,"planning",b.dataset.plDel));
+    }
   });
 
+  /* --- Modèle type --- */
   $("corps-modele-taches").addEventListener("click", async e => {
     const b = e.target.closest("button"); if(!b) return;
     if(b.dataset.mtSave){
@@ -589,7 +637,7 @@ function demarrer(){
     await batch.commit(); retourListe();
   };
 
-  /* --- 2) Abonnements temps réel (après le câblage) --- */
+  /* --- 2) Abonnements temps réel --- */
   assurerModele();
   onSnapshot(query(collection(db,"arrivants"), orderBy("creeLe","desc")),
     s => renderListe(s.docs), err => console.error("Erreur liste :", err));
