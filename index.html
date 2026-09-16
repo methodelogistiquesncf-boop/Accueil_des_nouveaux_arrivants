@@ -4,110 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Onboarding – Accueil des nouveaux arrivants</title>
-<style>
-  :root{--bleu:#1976d2;--bleu-f:#4a90d9;--bleu-clair:#ddebf7;--vert:#2e7d32;--rouge:#c62828;--gris:#f4f6f8;--bord:#d0d7de}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--gris);color:#222}
-  header{background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-  header h1{margin:0;font-size:20px}
-  main{max-width:1750px;margin:18px auto;padding:0 20px}
-  h2{font-size:18px;margin:18px 0 10px} h3{margin:26px 0 8px;color:#1565c0}
-  .aide{background:#eef5fc;border:1px solid var(--bleu-clair);color:#33506b;border-radius:8px;padding:10px 14px;font-size:13px}
-  .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-  .carte{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:8px}
-  .carte-tete{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px}
-  .carte-pied{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#556}
-  .badge{background:var(--bleu-clair);color:#1565c0;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap}
-  .badge-fait{background:#e8f5e9;color:var(--vert)}
-  .badge-off{background:#ffebee;color:var(--rouge)}
-  .jauge{background:#e3e8ee;border-radius:8px;height:10px;overflow:hidden;flex:1;min-width:120px}
-  .jauge div{background:linear-gradient(90deg,#43a047,#66bb6a);height:100%;width:0;transition:width .3s}
-  .tableau{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--bord)}
-  .tableau th{background:var(--bleu-f);color:#fff;text-align:left;padding:8px 10px;font-size:13px}
-  .tableau td{padding:7px 10px;border-top:1px solid #e6ebf1;font-size:14px;vertical-align:middle}
-  .tableau tbody tr:nth-child(even){background:var(--bleu-clair)}
-  .tableau tr.fait td.desc{text-decoration:line-through;color:#777}
-  .tableau input[type=date]{border:1px solid var(--bord);border-radius:6px;padding:4px 6px;font:inherit;background:#fff}
-  .tableau input[type=text],.tableau input[type=number]{width:100%;border:1px solid var(--bord);border-radius:6px;padding:5px 7px;font:inherit}
-  .centre{text-align:center}
-  .btn{background:var(--bleu);color:#fff;border:none;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
-  .btn:hover{background:#1565c0}
-  .btn-clair{background:#ffffff22;border:1px solid #ffffff66}
-  .btn-secondaire{background:#fff;color:#1565c0;border:1px solid var(--bleu);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
-  .btn-secondaire:hover{background:#eef5fc}
-  .btn-danger{background:#fff;color:var(--rouge);border:1px solid var(--rouge);padding:6px 10px;border-radius:8px;cursor:pointer;font:inherit}
-  .btn-gris{background:#e0e0e0;color:#333}
-  .btn-icone{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px}
-  .ligne-form{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
-  .ligne-form input[type=text]{flex:1;min-width:200px;border:1px solid var(--bord);border-radius:8px;padding:8px 10px;font:inherit}
-  .ligne-form input[type=date],.ligne-form input[type=number],.ligne-form input[type=time],.ligne-form select{border:1px solid var(--bord);border-radius:8px;padding:7px;font:inherit;background:#fff}
-  .entete-detail{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px}
-  .entete-detail h2{margin:0 0 6px}
-  .droite{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .vide{color:#667;font-style:italic}
-  .warning{background:#fff3cd;border:1px solid #ffc107;padding:10px 16px;text-align:center;font-weight:600}
-  dialog{border:none;border-radius:12px;padding:20px;width:min(420px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
-  dialog::backdrop{background:rgba(0,0,0,.4)}
-  dialog label{display:block;margin-bottom:12px;font-size:14px;font-weight:600}
-  dialog input{display:block;width:100%;margin-top:4px;border:1px solid var(--bord);border-radius:8px;padding:8px;font:inherit;font-weight:400}
-  .coche{display:flex!important;align-items:center;gap:8px;font-weight:500!important}
-  .coche input{width:auto;margin:0}
-  .dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
-  .dlg-heures{display:flex;gap:10px}
-  .dlg-heures label{flex:1}
-
-  /* ===== PLANNING SEMAINE ===== */
-  .sem-outils{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
-  #sem-titre{font-weight:700;min-width:230px;text-align:center;font-size:15px;text-transform:capitalize}
-  .sem-conteneur{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px;overflow-x:auto}
-  .sem-entetes,.sem-corps{display:grid;grid-template-columns:64px repeat(7,minmax(148px,1fr))}
-  .sem-jour{font-size:12px;font-weight:700;color:#1565c0;text-transform:capitalize;text-align:center;padding:6px 4px;border-bottom:2px solid var(--bleu-clair)}
-  .sem-jour.auj{background:var(--bleu-clair);border-radius:6px 6px 0 0}
-  .sem-gutter{border-right:1px solid var(--bord)}
-  .sem-heure{font-size:11px;color:#778;text-align:right;padding:2px 6px 0 0;border-top:1px solid #eef1f5}
-  .sem-col{position:relative;border-right:1px solid #eef1f5;cursor:cell;
-    background:repeating-linear-gradient(to bottom,
-      transparent 0 21px, #f0f3f7 21px 22px,
-      transparent 22px 43px, #e2e8f0 43px 44px)}
-  .sem-col.auj{background-color:#f4f9ff}
-  .sem-slot{position:absolute;left:3px;right:3px;background:var(--bleu-clair);border-left:3px solid var(--bleu);
-    border-radius:4px;padding:2px 6px 10px;font-size:11px;overflow:hidden;cursor:grab;
-    box-shadow:0 1px 2px rgba(0,0,0,.10);touch-action:none;user-select:none}
-  .sem-slot:hover{background:#cfe3f7}
-  .sem-slot.drag{opacity:.9;box-shadow:0 8px 20px rgba(0,0,0,.28);z-index:6;cursor:grabbing}
-  .sem-slot b{color:#1565c0;display:block;font-size:10px;pointer-events:none}
-  .sem-slot .txt{pointer-events:none}
-  .sem-grip{position:absolute;left:0;right:0;bottom:0;height:9px;cursor:ns-resize;
-    background:linear-gradient(to bottom, transparent 30%, rgba(25,118,210,.45) 30%)}
-  .sem-grip:hover{background:linear-gradient(to bottom, transparent 10%, rgba(25,118,210,.7) 10%)}
-  .cal-slot{background:var(--bleu-clair);border-radius:6px;padding:2px 6px;font-size:11px;cursor:pointer;display:inline-flex;gap:5px;align-items:baseline}
-  .cal-slot:hover{background:#cfe3f7}
-  .cal-h{font-weight:700;color:#1565c0;white-space:nowrap}
-
-  /* ===== PAGE LOGIN ===== */
-  #vue-auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-            background:linear-gradient(135deg,#1565c0 0%,#42a5f5 100%);z-index:100;padding:20px}
-  .boite-auth{background:#fff;border-radius:16px;padding:36px 34px;width:min(420px,100%);
-              box-shadow:0 20px 60px rgba(0,0,0,.25)}
-  .boite-auth h2{margin:0 0 6px;font-size:24px;color:#1565c0;text-align:center}
-  .boite-auth .sous-titre{text-align:center;color:#667;font-size:14px;margin-bottom:26px}
-  .boite-auth label{display:block;margin-bottom:14px;font-weight:600;font-size:13px;color:#445}
-  .boite-auth input{display:block;width:100%;margin-top:4px;border:1px solid var(--bord);
-                    border-radius:8px;padding:11px 12px;font:inherit;font-weight:400;font-size:15px}
-  .boite-auth .btn{width:100%;padding:12px;font-size:15px;margin-top:8px}
-  .boite-auth .btn-lien{background:none;color:var(--bleu);border:none;cursor:pointer;font:inherit;
-                        font-size:13px;padding:4px;text-decoration:underline;display:block;margin:12px auto 0}
-  .message{padding:10px 12px;border-radius:8px;margin-bottom:14px;font-size:13px;display:none}
-  .message.ok{background:#e8f5e9;color:var(--vert);border:1px solid #a5d6a7;display:block}
-  .message.erreur{background:#ffebee;color:var(--rouge);border:1px solid #ef9a9a;display:block}
-  .user-chip{background:#ffffff22;border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:13px}
-  #btn-deconnexion{background:#ffffff22;color:#fff;border:1px solid #ffffff66;border-radius:8px;
-                  padding:6px 12px;cursor:pointer;font:inherit;font-size:13px}
-  #btn-deconnexion:hover{background:#ffffff33}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ffffff66;
-           border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-</style>
+<link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
@@ -138,7 +35,7 @@
       <button id="btn-deconnexion">Déconnexion</button>
     </div>
   </header>
-  <div id="cfg-warning" class="warning" hidden>⚠️ Collez votre configuration Firebase (bloc <code>firebaseConfig</code>) dans le fichier.</div>
+  <div id="cfg-warning" class="warning" hidden>⚠️ Collez votre configuration Firebase (bloc <code>firebaseConfig</code>) dans <code>js/config.js</code>.</div>
 
   <main>
     <!-- ===== VUE LISTE ===== -->
@@ -159,7 +56,8 @@
         <div class="droite">
           <div class="jauge"><div id="jauge-plein"></div></div>
           <span id="jauge-texte"></span>
-          <button class="btn-secondaire" id="btn-regenere" title="Remplace les prérequis et le planning par le modèle type actuel, dates recalculées">🔄 Regénérer depuis le modèle</button>
+          <button class="btn-secondaire" id="btn-edit-fiche" title="Modifier nom, numéro de CP, date d'arrivée">✏️ Modifier la fiche</button>
+          <button class="btn-secondaire" id="btn-regenere" title="Remplace prérequis et planning par le modèle type, dates recalculées">🔄 Regénérer depuis le modèle</button>
           <button class="btn-danger" id="btn-suppr-arrivant">🗑 Supprimer</button>
         </div>
       </div>
@@ -228,7 +126,7 @@
       </form>
     </section>
 
-    <!-- ===== VUE UTILISATEURS (admin) ===== -->
+    <!-- ===== VUE UTILISATEURS ===== -->
     <section id="vue-users" hidden>
       <button class="btn" id="btn-retour-users">← Retour à la liste</button>
       <h2>👥 Gestion des utilisateurs</h2>
@@ -260,16 +158,30 @@
   </main>
 </div>
 
+<!-- ===== Fenêtres ===== -->
 <dialog id="dlg-nouveau">
   <form id="form-nouveau">
     <h3>Nouvel arrivant</h3>
     <label>Nom complet<input id="nv-nom" required placeholder="Ex : GUEYE NIANA"></label>
-    <label>Matricule<input id="nv-matricule" placeholder="Ex : 0206152D"></label>
+    <label>Numéro de CP<input id="nv-matricule" placeholder="Ex : 0206152D"></label>
     <label>Date d'arrivée<input id="nv-date" type="date" required></label>
     <label class="coche"><input type="checkbox" id="nv-modele" checked> Charger les propositions type (modèle standard)</label>
     <div class="dlg-actions">
       <button type="button" class="btn btn-gris" id="btn-annuler">Annuler</button>
       <button type="submit" class="btn">Créer</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-fiche">
+  <form id="form-fiche">
+    <h3>Modifier la fiche arrivant</h3>
+    <label>Nom complet<input id="f-nom" required></label>
+    <label>Numéro de CP<input id="f-cp"></label>
+    <label>Date d'arrivée<input id="f-date" type="date" required></label>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-gris" id="f-annuler">Annuler</button>
+      <button type="submit" class="btn">Enregistrer</button>
     </div>
   </form>
 </dialog>
@@ -291,737 +203,41 @@
   </form>
 </dialog>
 
+<!-- ===== Scripts applicatifs (ordre important) ===== -->
+<script src="js/state.js"></script>
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/renders.js"></script>
+<script src="js/planning.js"></script>
+<script src="js/modele.js"></script>
+<script src="js/users.js"></script>
+<script src="js/detail.js"></script>
+<script src="js/main.js"></script>
+
+<!-- ===== Amorçage Firebase (seul bloc module) ===== -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs,
-         onSnapshot, query, orderBy, writeBatch, serverTimestamp, increment, getCountFromServer }
-         from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-         sendPasswordResetEmail, signOut, onAuthStateChanged }
-         from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs,
+           onSnapshot, query, orderBy, writeBatch, serverTimestamp, increment, getCountFromServer }
+           from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+           sendPasswordResetEmail, signOut, onAuthStateChanged }
+           from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ==================== CONFIG FIREBASE ==================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyAzbOkSQraq6bZqh2BLwQ0A61ZAQQuNX9U",
-  authDomain: "accueildesarrivants.firebaseapp.com",
-  projectId: "accueildesarrivants",
-  storageBucket: "accueildesarrivants.firebasestorage.app",
-  messagingSenderId: "252923959783",
-  appId: "1:252923959783:web:5451cc95fa4ce3b0418542"
-};
-/* ========================================================= */
+  const app           = initializeApp(firebaseConfig);
+  const appSecondaire = initializeApp(firebaseConfig, "secondaire");
 
-/* ----- Réglages de la vue semaine ----- */
-const DEBUT_JOURNEE = 7, FIN_JOURNEE = 19, HOUR_H = 44, SNAP = 0.5;
-
-const app  = initializeApp(firebaseConfig);
-const db   = getFirestore(app);
-const auth = getAuth(app);
-/* Seconde instance : créer des comptes SANS déconnecter l'admin connecté */
-const appSecondaire  = initializeApp(firebaseConfig, "secondaire");
-const authSecondaire = getAuth(appSecondaire);
-
-const COL_MODELE_TACHES   = () => collection(db,"modele","standard","taches");
-const COL_MODELE_PLANNING = () => collection(db,"modele","standard","planning");
-
-/* ---------- Propositions type par défaut (contenu de votre Excel) ---------- */
-const DEFAUT_MODELE = {
-  taches: [
-    { off:-5, description:"Commander le PC portable" },
-    { off:-5, description:"Récupérer le calendrier d'alternance (Seb Dubresson)" },
-    { off:-5, description:"Créer compte Reflex (profil Gstock)" },
-    { off:-3, description:"Basculer l'écran de Lucas vers l'alternant si possible" },
-    { off:-3, description:"Badge accès magasin + badge pour badger (jour d'arrivée donné par RH)" },
-    { off: 0, description:"Accueil Mika / Ami" },
-    { off: 0, description:"Récupérer les EPIs (gilet, chaussures, casquette…)" },
-    { off: 0, description:"Visite du site en général + visite LI" },
-    { off: 0, description:"Diffusion des documents et mise à jour avec Gequi" },
-    { off: 0, description:"Voir si besoin de facilité de circulation en attendant" },
-    { off: 1, description:"Accueil sécurité (9h00–11h00)" },
-    { off: 2, description:"Planning « vie ma vie » avec les équipes (réception, expédition, prélèvement, rangement, kitting, ordo, stock, appros)" },
-    { off: 2, description:"Formation base : comment vient le besoin … et Reflex" },
-  ],
-  planning: [
-    { off:0, heure:"08:00–09:00", activite:"Accueil & récupération des EPI" },
-    { off:0, heure:"10:00–12:00", activite:"Visite du site en général + visite LI" },
-    { off:0, heure:"13:00",       activite:"Diffusion documentaire" },
-    { off:1, heure:"09:00–11:00", activite:"Accueil sécurité" },
-    { off:1, heure:"13:00",       activite:"Vie ma vie – Réception" },
-    { off:1, heure:"14:00",       activite:"Vie ma vie – Rangement" },
-    { off:1, heure:"15:00",       activite:"Vie ma vie – Kitting" },
-    { off:1, heure:"16:00",       activite:"Vie ma vie – Ordo" },
-    { off:1, heure:"16:30",       activite:"Vie ma vie – Appro" },
-    { off:1, heure:"17:00",       activite:"Vie ma vie – Gstock" },
-  ]
-};
-
-/* ---------- Utilitaires ---------- */
-const $ = id => document.getElementById(id);
-const esc = s => (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const parseISO = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
-const toISO = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-const addDays = (iso, off) => { const d = parseISO(iso); d.setDate(d.getDate()+off); return toISO(d); };
-const fmtLong = iso => iso ? parseISO(iso).toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
-const lundiDe = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; };
-const hmToDec = hm => { const p = (hm||"").split(":"); return (+p[0]||0) + ((+p[1]||0)/60); };
-const hhmm = dec => String(Math.floor(dec)).padStart(2,"0") + ":" + String(Math.round((dec%1)*60)).padStart(2,"0");
-function parseHeure(str){
-  const m = (str||"").match(/(\d{1,2})[:hH](\d{2})?/g) || [];
-  const vals = m.map(x=>{ const p = x.match(/(\d{1,2})[:hH](\d{2})?/); return (+p[1]) + (p[2] ? (+p[2])/60 : 0); });
-  let deb = vals.length ? vals[0] : 9;
-  let fin = vals.length > 1 ? vals[1] : deb + 1;
-  if(fin <= deb) fin = deb + 1;
-  deb = Math.min(Math.max(deb, DEBUT_JOURNEE), FIN_JOURNEE - 0.5);
-  fin = Math.min(Math.max(fin, deb + 0.5), FIN_JOURNEE);
-  return { deb, fin };
-}
-function normSlot(s){
-  if(s && s.debut){
-    const d = hmToDec(s.debut), f = s.fin ? hmToDec(s.fin) : d + 1;
-    return { deb: d, fin: (f > d ? f : d + 1) };
-  }
-  return parseHeure(s ? s.heure : "");
-}
-const labelHeure = (deb, fin) => hhmm(deb) + "–" + hhmm(fin);
-
-/* ---------- Messages d'erreur Firebase en français ---------- */
-const ERREURS_FR = {
-  "auth/invalid-email":"Adresse email invalide.",
-  "auth/user-disabled":"Ce compte a été désactivé.",
-  "auth/user-not-found":"Aucun compte trouvé avec cet email. Contactez votre administrateur pour qu'il crée votre accès.",
-  "auth/wrong-password":"Mot de passe incorrect.",
-  "auth/invalid-credential":"Email ou mot de passe incorrect. Si vous n'avez pas de compte, contactez votre administrateur.",
-  "auth/email-already-in-use":"Un compte existe déjà avec cet email.",
-  "auth/weak-password":"Mot de passe trop faible (6 caractères minimum).",
-  "auth/too-many-requests":"Trop de tentatives. Réessayez dans quelques minutes.",
-  "auth/operation-not-allowed":"Connexion email/mot de passe non activée dans la console Firebase.",
-  "auth/network-request-failed":"Problème de connexion internet.",
-  "auth/missing-password":"Veuillez saisir un mot de passe.",
-};
-const traduireErreur = (code, message) => ERREURS_FR[code] || message || "Une erreur est survenue.";
-
-/* ---------- UI Auth ---------- */
-function afficherMessageAuth(txt, type){ const el = $("auth-message"); el.textContent = txt; el.className = "message " + type; }
-function effacerMessageAuth(){ $("auth-message").className = "message"; $("auth-message").textContent = ""; }
-
-async function gestionLogin(e){
-  e.preventDefault();
-  const email = $("login-email").value.trim().toLowerCase();
-  const password = $("login-password").value;
-  const btn = $("btn-login");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Connexion…';
-  effacerMessageAuth();
-  try { await signInWithEmailAndPassword(auth, email, password); }
-  catch(err){ afficherMessageAuth(traduireErreur(err.code, err.message) + "  [" + err.code + "]", "erreur"); }
-  finally { btn.disabled = false; btn.textContent = "Se connecter"; }
-}
-async function gestionForgot(){
-  const email = $("login-email").value.trim().toLowerCase();
-  if(!email){ afficherMessageAuth("Saisissez d'abord votre email dans le champ ci-dessus, puis cliquez sur ce lien.", "erreur"); return; }
-  effacerMessageAuth();
-  try { await sendPasswordResetEmail(auth, email);
-        afficherMessageAuth("✅ Un email de réinitialisation a été envoyé à " + email + ". Vérifiez votre boîte (et les spams).", "ok"); }
-  catch(err){ afficherMessageAuth(traduireErreur(err.code, err.message) + "  [" + err.code + "]", "erreur"); }
-}
-const gestionDeconnexion = () => signOut(auth);
-
-/* ---------- État applicatif ---------- */
-let idCourant = null, arrivantCourant = null, docsTaches = [], docsPlanning = [], docsUsers = [],
-    editionId = null, unsubsDetail = [], semDebut = null, slotEditId = null, drag = null,
-    monRole = null, unsubProfil = null, msgApresDeconnexion = null;
-
-/* ---------- Rendus ---------- */
-function renderListe(docs){
-  $("liste-vide").hidden = docs.length > 0;
-  $("liste-arrivants").innerHTML = docs.map(d => {
-    const a = d.data(), total = a.nbTaches||0, faites = a.nbFaites||0;
-    const pct = total ? Math.round(faites/total*100) : 0;
-    return `<div class="carte">
-      <div class="carte-tete"><strong>${esc(a.nom)}</strong><span class="badge">${esc(a.matricule||"")}</span></div>
-      <div>Arrivée : <b>${fmtLong(a.dateArrivee)}</b></div>
-      <div class="jauge"><div style="width:${pct}%"></div></div>
-      <div class="carte-pied"><span>${faites}/${total} prérequis faits (${pct} %)</span>
-      <button class="btn" data-ouvrir="${d.id}">Ouvrir →</button></div></div>`;
-  }).join("");
-}
-function renderEntete(){
-  const a = arrivantCourant; if(!a) return;
-  $("detail-titre").textContent = `Arrivée de ${a.nom} le ${fmtLong(a.dateArrivee)}`;
-  $("detail-matricule").textContent = a.matricule || "—";
-  const total = a.nbTaches||0, faites = a.nbFaites||0, pct = total ? Math.round(faites/total*100) : 0;
-  $("jauge-plein").style.width = pct+"%";
-  $("jauge-texte").textContent = `${faites}/${total} prérequis faits (${pct} %)`;
-  if(!semDebut){
-    semDebut = lundiDe(a.dateArrivee ? parseISO(a.dateArrivee) : new Date());
-    renderSemaine();
-  }
-}
-function renderChecklist(){
-  $("corps-checklist").innerHTML = docsTaches.map(d => {
-    const t = d.data();
-    if (d.id === editionId) return `<tr>
-      <td><input type="text" id="edit-desc" value="${esc(t.description)}"></td>
-      <td><input type="date" id="edit-date" value="${t.date||""}"></td>
-      <td class="centre">—</td>
-      <td class="centre">
-        <button class="btn-icone" data-action="save" data-id="${d.id}" title="Enregistrer">💾</button>
-        <button class="btn-icone" data-action="cancel" title="Annuler">✖</button></td></tr>`;
-    return `<tr class="${t.fait?"fait":""}">
-      <td class="desc">${esc(t.description)}</td>
-      <td><input type="date" data-action="date" data-id="${d.id}" value="${t.date||""}"></td>
-      <td class="centre"><input type="checkbox" data-action="fait" data-id="${d.id}" ${t.fait?"checked":""}>
-        ${t.fait?'<span class="badge badge-fait">Fait</span>':""}</td>
-      <td class="centre">
-        <button class="btn-icone" data-action="edit" data-id="${d.id}" title="Modifier">✏️</button>
-        <button class="btn-icone" data-action="del"  data-id="${d.id}" title="Supprimer">🗑</button></td></tr>`;
-  }).join("") || `<tr><td colspan="4" class="vide">Aucun prérequis.</td></tr>`;
-}
-
-/* ---------- Planning semaine ---------- */
-function renderSemaine(){
-  if(!semDebut) return;
-  const jours = [...Array(7)].map((_,i)=> new Date(semDebut.getFullYear(), semDebut.getMonth(), semDebut.getDate()+i));
-  const auj = toISO(new Date());
-  $("sem-titre").textContent = "Semaine du " + semDebut.toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
-  $("sem-entetes").innerHTML = `<div class="sem-coin"></div>` + jours.map(d =>
-    `<div class="sem-jour ${toISO(d)===auj?"auj":""}">${d.toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit"})}</div>`).join("");
-
-  const parJour = new Map();
-  docsPlanning.forEach(d => { const s = {id:d.id, ...d.data()}, k = s.date || "sans";
-    if(!parJour.has(k)) parJour.set(k, []); parJour.get(k).push(s); });
-  parJour.forEach(l => l.sort((a,b)=> normSlot(a).deb - normSlot(b).deb));
-
-  const H = (FIN_JOURNEE - DEBUT_JOURNEE) * HOUR_H;
-  let html = `<div class="sem-gutter" style="height:${H}px">` +
-    [...Array(FIN_JOURNEE-DEBUT_JOURNEE)].map((_,i)=>
-      `<div class="sem-heure" style="height:${HOUR_H}px">${String(DEBUT_JOURNEE+i).padStart(2,"0")}:00</div>`).join("") +
-    `</div>`;
-  jours.forEach(d => {
-    const iso = toISO(d);
-    const slots = parJour.get(iso)||[];
-    html += `<div class="sem-col ${iso===auj?"auj":""}" data-jour="${iso}" style="height:${H}px">` +
-      slots.map(s => {
-        const {deb, fin} = normSlot(s);
-        const top = (deb - DEBUT_JOURNEE) * HOUR_H;
-        const h   = Math.max(22, (fin - deb) * HOUR_H - 2);
-        return `<div class="sem-slot" data-cal-edit="${s.id}" style="top:${top}px;height:${h}px"
-          title="${esc(labelHeure(deb,fin))} – ${esc(s.activite)}">
-          <b>${esc(labelHeure(deb,fin))}</b><span class="txt">${esc(s.activite)}</span>
-          <div class="sem-grip" title="Étirer / réduire"></div></div>`;
-      }).join("") + `</div>`;
-  });
-  $("sem-corps").innerHTML = html;
-
-  const sans = parJour.get("sans")||[];
-  $("sem-sans-date").innerHTML = sans.length
-    ? "Créneaux sans date : " + sans.map(s=>{ const {deb,fin} = normSlot(s);
-        return `<span class="cal-slot" data-cal-edit="${s.id}">
-          <span class="cal-h">${esc(labelHeure(deb,fin))}</span> ${esc(s.activite)}</span>`; }).join("")
-    : "";
-}
-
-function majPendantDrag(){
-  const b = drag.el.querySelector("b");
-  if(b) b.textContent = labelHeure(drag.newDeb ?? drag.deb, drag.newFin ?? drag.fin);
-}
-function initDragAndDrop(){
-  $("sem-corps").addEventListener("pointerdown", e => {
-    const slot = e.target.closest(".sem-slot"); if(!slot) return;
-    const id = slot.dataset.calEdit;
-    const s = docsPlanning.find(d=>d.id===id)?.data(); if(!s) return;
-    const {deb, fin} = normSlot(s);
-    drag = { id, el: slot, mode: e.target.closest(".sem-grip") ? "resize" : "move",
-             x0:e.clientX, y0:e.clientY, deb, fin, date:s.date || "",
-             moved:false, newDate:null, newDeb:null, newFin:null };
-    e.preventDefault();
-  });
-  window.addEventListener("pointermove", e => {
-    if(!drag) return;
-    const dy = e.clientY - drag.y0, dx = e.clientX - drag.x0;
-    if(!drag.moved && Math.abs(dy) < 5 && Math.abs(dx) < 5) return;
-    if(!drag.moved){
-      drag.moved = true;
-      drag.el.classList.add("drag");
-      drag.el.style.pointerEvents = "none";
-      document.body.style.userSelect = "none";
-    }
-    const delta = Math.round(dy / HOUR_H / SNAP) * SNAP;
-    if(drag.mode === "move"){
-      const dur = drag.fin - drag.deb;
-      const deb = Math.min(Math.max(drag.deb + delta, DEBUT_JOURNEE), FIN_JOURNEE - dur);
-      const under = document.elementFromPoint(e.clientX, e.clientY);
-      const col = under && under.closest ? under.closest(".sem-col") : null;
-      drag.newDate = col ? col.dataset.jour : drag.date;
-      drag.newDeb = deb; drag.newFin = deb + dur;
-      drag.el.style.top = ((deb - DEBUT_JOURNEE) * HOUR_H) + "px";
-      if(col && col !== drag.el.parentElement) col.appendChild(drag.el);
-    } else {
-      const fin = Math.min(Math.max(drag.fin + delta, drag.deb + SNAP), FIN_JOURNEE);
-      drag.newDeb = drag.deb; drag.newFin = fin;
-      drag.el.style.height = Math.max(20, (fin - drag.deb) * HOUR_H - 2) + "px";
-    }
-    majPendantDrag();
-  });
-  window.addEventListener("pointerup", async () => {
-    if(!drag) return;
-    const d = drag; drag = null;
-    d.el.classList.remove("drag");
-    d.el.style.pointerEvents = "";
-    document.body.style.userSelect = "";
-    if(!d.moved){ ouvrirDlgSlot(d.id); return; }
-    const date = d.newDate ?? d.date;
-    const deb  = d.newDeb  ?? d.deb;
-    const fin  = d.newFin  ?? d.fin;
-    if(!date) return;
-    await updateDoc(doc(db,"arrivants",idCourant,"planning",d.id),
-      { date, debut: hhmm(deb), fin: hhmm(fin), heure: labelHeure(deb,fin) });
-  });
-}
-function ouvrirDlgSlot(id, dateDefaut, debutDefaut){
-  slotEditId = id || null;
-  if(id){
-    const s = docsPlanning.find(d=>d.id===id)?.data(); if(!s) return;
-    const {deb, fin} = normSlot(s);
-    $("dlg-slot-titre").textContent = "Modifier le créneau";
-    $("sl-date").value = s.date||"";
-    $("sl-debut").value = hhmm(deb);
-    $("sl-fin").value = hhmm(fin);
-    $("sl-act").value = s.activite||"";
-    $("sl-suppr").style.display = "";
-  } else {
-    const deb = hmToDec(debutDefaut || "09:00");
-    $("dlg-slot-titre").textContent = "Nouveau créneau";
-    $("sl-date").value = dateDefaut||"";
-    $("sl-debut").value = hhmm(deb);
-    $("sl-fin").value = hhmm(Math.min(deb + 1, FIN_JOURNEE));
-    $("sl-act").value = "";
-    $("sl-suppr").style.display = "none";
-  }
-  $("dlg-slot").showModal();
-}
-
-/* ---------- Rendus modèle type ---------- */
-function renderModeleTaches(docs){
-  $("corps-modele-taches").innerHTML = docs.map(d => { const t = d.data();
-    return `<tr>
-      <td><input type="text" data-mt-desc="${d.id}" value="${esc(t.description)}"></td>
-      <td><input type="number" data-mt-off="${d.id}" value="${t.off ?? 0}" style="width:90px"></td>
-      <td class="centre">
-        <button class="btn-icone" data-mt-save="${d.id}" title="Enregistrer">💾</button>
-        <button class="btn-icone" data-mt-del="${d.id}" title="Supprimer">🗑</button></td></tr>`;
-  }).join("") || `<tr><td colspan="3" class="vide">Aucun prérequis type.</td></tr>`;
-}
-function renderModelePlanning(docs){
-  $("corps-modele-planning").innerHTML = docs.map(d => { const s = d.data();
-    return `<tr>
-      <td><input type="number" data-mp-off="${d.id}" value="${s.off ?? 0}" style="width:90px"></td>
-      <td><input type="text" data-mp-heure="${d.id}" value="${esc(s.heure||"")}"></td>
-      <td><input type="text" data-mp-act="${d.id}" value="${esc(s.activite||"")}"></td>
-      <td class="centre">
-        <button class="btn-icone" data-mp-save="${d.id}" title="Enregistrer">💾</button>
-        <button class="btn-icone" data-mp-del="${d.id}" title="Supprimer">🗑</button></td></tr>`;
-  }).join("") || `<tr><td colspan="4" class="vide">Aucun créneau type.</td></tr>`;
-}
-
-/* ---------- Rendu utilisateurs ---------- */
-function renderUsers(docs){
-  const moi = auth.currentUser ? auth.currentUser.uid : null;
-  $("corps-users").innerHTML = docs.map(d => { const u = d.data();
-    return `<tr>
-      <td>${esc(u.email||"")} ${d.id===moi?'<span class="badge">(vous)</span>':''}</td>
-      <td>${esc(u.nom||"")}</td>
-      <td>${u.role==="admin"?'<span class="badge badge-fait">Admin</span>':'<span class="badge">Utilisateur</span>'}</td>
-      <td>${u.actif===false?'<span class="badge badge-off">Désactivé</span>':'<span class="badge badge-fait">Actif</span>'}</td>
-      <td class="centre">
-        <button class="btn-secondaire" data-u-role="${d.id}" style="padding:3px 8px;font-size:12px"
-          title="Changer le rôle">${u.role==="admin"?"Rétrograder en utilisateur":"Promouvoir admin"}</button>
-        <button class="btn-secondaire" data-u-actif="${d.id}" style="padding:3px 8px;font-size:12px"
-          title="Désactiver ou réactiver l'accès">${u.actif===false?"✅ Réactiver":"⛔ Désactiver"}</button>
-      </td></tr>`;
-  }).join("") || `<tr><td colspan="5" class="vide">Aucun compte référencé.</td></tr>`;
-}
-
-/* ---------- Navigation ---------- */
-function cacherSections(){
-  $("vue-liste").hidden = true; $("vue-detail").hidden = true;
-  $("vue-modele").hidden = true; $("vue-users").hidden = true;
-}
-function fermerDetail(){ unsubsDetail.forEach(u=>u()); unsubsDetail = []; idCourant = null; semDebut = null; }
-function ouvrirDetail(id){
-  fermerDetail(); idCourant = id;
-  cacherSections(); $("vue-detail").hidden = false;
-  unsubsDetail.push(onSnapshot(doc(db,"arrivants",id),
-    s => { if(s.exists()){ arrivantCourant = {id:s.id, ...s.data()}; renderEntete(); } },
-    err => console.error("Erreur fiche :", err)));
-  unsubsDetail.push(onSnapshot(query(collection(db,"arrivants",id,"taches"), orderBy("date")),
-    s => {
-      docsTaches = s.docs.slice().sort((a,b)=>{
-        const ta=a.data(), tb=b.data();
-        return (ta.date||"").localeCompare(tb.date||"") || (ta.ordre||0)-(tb.ordre||0);
-      });
-      renderChecklist();
-    },
-    err => console.error("Erreur checklist :", err)));
-  unsubsDetail.push(onSnapshot(query(collection(db,"arrivants",id,"planning"), orderBy("date")),
-    s => {
-      docsPlanning = s.docs.slice().sort((a,b)=>{
-        const ta=a.data(), tb=b.data();
-        return (ta.date||"").localeCompare(tb.date||"") || normSlot(ta).deb - normSlot(tb).deb;
-      });
-      renderSemaine();
-    },
-    err => console.error("Erreur planning :", err)));
-}
-function ouvrirModele(){
-  fermerDetail(); cacherSections(); $("vue-modele").hidden = false;
-}
-function ouvrirUsers(){
-  if(monRole !== "admin"){ alert("Accès réservé aux administrateurs."); return; }
-  fermerDetail(); cacherSections(); $("vue-users").hidden = false;
-}
-function retourListe(){
-  fermerDetail(); cacherSections(); $("vue-liste").hidden = false;
-}
-function majBtnUsers(){
-  $("btn-users").style.display = (monRole === "admin") ? "" : "none";
-}
-
-/* ---------- Modèle type : init / reset ---------- */
-async function assurerModele(){
-  try {
-    const metaRef = doc(db,"modele","standard");
-    const metaSnap = await getDoc(metaRef);
-    if(metaSnap.exists()) return;
-    const batch = writeBatch(db);
-    DEFAUT_MODELE.taches.forEach((t,i)   => batch.set(doc(COL_MODELE_TACHES()),   { ...t, ordre:i }));
-    DEFAUT_MODELE.planning.forEach((s,i) => batch.set(doc(COL_MODELE_PLANNING()), { ...s, ordre:i }));
-    batch.set(metaRef, { initialise:true, date: serverTimestamp() });
-    await batch.commit();
-  } catch(err){ console.error("Initialisation du modèle :", err); }
-}
-async function reinitialiserModele(){
-  const [mt, mp] = await Promise.all([ getDocs(COL_MODELE_TACHES()), getDocs(COL_MODELE_PLANNING()) ]);
-  const batch = writeBatch(db);
-  mt.docs.forEach(d => batch.delete(d.ref));
-  mp.docs.forEach(d => batch.delete(d.ref));
-  batch.delete(doc(db,"modele","standard"));
-  await batch.commit();
-  await assurerModele();
-}
-
-/* ---------- Régénérer un arrivant ---------- */
-async function regenererDepuisModele(){
-  const a = arrivantCourant; if(!a) return;
-  if(!confirm("Remplacer TOUS les prérequis et le planning de cet arrivant par le modèle type actuel,\navec dates recalculées sur la date d'arrivée ?\nLes cochages et modifications actuels seront perdus.")) return;
-  const [mt, mp] = await Promise.all([
-    getDocs(query(COL_MODELE_TACHES(),   orderBy("ordre"))),
-    getDocs(query(COL_MODELE_PLANNING(), orderBy("ordre")))
-  ]);
-  const old = await Promise.all([
-    getDocs(collection(db,"arrivants",idCourant,"taches")),
-    getDocs(collection(db,"arrivants",idCourant,"planning"))
-  ]);
-  const batch = writeBatch(db);
-  old.forEach(s => s.docs.forEach(d => batch.delete(d.ref)));
-  mt.docs.forEach((d,i)=>{ const t = d.data();
-    batch.set(doc(collection(db,"arrivants",idCourant,"taches")),
-      { description:t.description, date:addDays(a.dateArrivee, t.off||0), fait:false, ordre:i }); });
-  mp.docs.forEach((d,i)=>{ const s = d.data();
-    const {deb, fin} = parseHeure(s.heure);
-    batch.set(doc(collection(db,"arrivants",idCourant,"planning")),
-      { date:addDays(a.dateArrivee, s.off||0), debut:hhmm(deb), fin:hhmm(fin),
-        heure:labelHeure(deb,fin), activite:s.activite||"", ordre:i }); });
-  batch.update(doc(db,"arrivants",idCourant), { nbTaches: mt.docs.length, nbFaites: 0 });
-  await batch.commit();
-}
-
-/* ---------- Démarrage ---------- */
-let appDemarree = false;
-function demarrer(){
-  if(appDemarree) return; appDemarree = true;
-
-  $("btn-retour").onclick = retourListe;
-  $("btn-retour-modele").onclick = retourListe;
-  $("btn-retour-users").onclick = retourListe;
-  $("btn-modele").onclick = ouvrirModele;
-  $("btn-users").onclick = ouvrirUsers;
-  $("btn-regenere").onclick = regenererDepuisModele;
-  $("btn-reset-modele").onclick = async () => {
-    if(!confirm("Réinitialiser le modèle type aux valeurs d'origine (celles de votre Excel) ?\nLes personnalisations actuelles du modèle seront perdues.")) return;
-    await reinitialiserModele();
-  };
-  $("btn-nouveau").onclick = () => { $("nv-date").value = toISO(new Date()); $("dlg-nouveau").showModal(); };
-  $("btn-annuler").onclick = () => $("dlg-nouveau").close();
-  $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
-
-  /* Planning semaine */
-  $("sem-prev").onclick = () => { semDebut.setDate(semDebut.getDate()-7); renderSemaine(); };
-  $("sem-next").onclick = () => { semDebut.setDate(semDebut.getDate()+7); renderSemaine(); };
-  $("sem-aujourd").onclick = () => { semDebut = lundiDe(new Date()); renderSemaine(); };
-  $("sem-ajout").onclick = () => {
-    const t = new Date(), lundi = lundiDe(t);
-    const dansSemaine = semDebut.getTime() === lundi.getTime();
-    ouvrirDlgSlot(null, dansSemaine ? toISO(t) : toISO(semDebut), "09:00");
-  };
-  $("sem-corps").addEventListener("click", e => {
-    if(e.target.closest(".sem-slot")) return;
-    const col = e.target.closest(".sem-col");
-    if(col){
-      const rect = col.getBoundingClientRect();
-      let h = DEBUT_JOURNEE + Math.floor((e.clientY - rect.top) / HOUR_H / SNAP) * SNAP;
-      h = Math.min(Math.max(h, DEBUT_JOURNEE), FIN_JOURNEE - 1);
-      ouvrirDlgSlot(null, col.dataset.jour, hhmm(h));
-    }
-  });
-  initDragAndDrop();
-  $("sem-sans-date").addEventListener("click", e => {
-    const ed = e.target.closest("[data-cal-edit]"); if(ed) ouvrirDlgSlot(ed.dataset.calEdit);
-  });
-  $("sl-annuler").onclick = () => $("dlg-slot").close();
-  $("sl-suppr").onclick = async () => {
-    if(slotEditId && confirm("Supprimer ce créneau ?")){
-      await deleteDoc(doc(db,"arrivants",idCourant,"planning",slotEditId));
-      $("dlg-slot").close();
-    }
-  };
-  $("form-slot-edit").addEventListener("submit", async e => {
-    e.preventDefault();
-    const date = $("sl-date").value;
-    let deb = hmToDec($("sl-debut").value), fin = hmToDec($("sl-fin").value);
-    const activite = $("sl-act").value.trim();
-    if(!date || !activite) return;
-    if(fin <= deb) fin = deb + 1;
-    if(slotEditId) await updateDoc(doc(db,"arrivants",idCourant,"planning",slotEditId),
-      { date, debut: hhmm(deb), fin: hhmm(fin), heure: labelHeure(deb,fin), activite });
-    else await addDoc(collection(db,"arrivants",idCourant,"planning"),
-      { date, debut: hhmm(deb), fin: hhmm(fin), heure: labelHeure(deb,fin), activite, ordre: Date.now() });
-    $("dlg-slot").close();
+  /* Expose le SDK aux scripts classiques */
+  Object.assign(window, {
+    db: getFirestore(app), auth: getAuth(app), authSecondaire: getAuth(appSecondaire),
+    collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs,
+    onSnapshot, query, orderBy, writeBatch, serverTimestamp, increment, getCountFromServer,
+    signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    sendPasswordResetEmail, signOut, onAuthStateChanged
   });
 
-  /* Création d'un arrivant */
-  $("form-nouveau").addEventListener("submit", async e => {
-    e.preventDefault();
-    const nom = $("nv-nom").value.trim(), dateArrivee = $("nv-date").value;
-    if(!nom || !dateArrivee) return;
-    let mtDocs = [], mpDocs = [];
-    if($("nv-modele").checked){
-      const [mt, mp] = await Promise.all([
-        getDocs(query(COL_MODELE_TACHES(),   orderBy("ordre"))),
-        getDocs(query(COL_MODELE_PLANNING(), orderBy("ordre")))
-      ]);
-      mtDocs = mt.docs; mpDocs = mp.docs;
-    }
-    const ref = await addDoc(collection(db,"arrivants"), {
-      nom, matricule: $("nv-matricule").value.trim(), dateArrivee,
-      nbTaches: mtDocs.length, nbFaites: 0, creeLe: serverTimestamp() });
-    if(mtDocs.length || mpDocs.length){
-      const batch = writeBatch(db);
-      mtDocs.forEach((d,i)=>{ const t = d.data();
-        batch.set(doc(collection(db,"arrivants",ref.id,"taches")),
-          { description:t.description, date:addDays(dateArrivee, t.off||0), fait:false, ordre:i }); });
-      mpDocs.forEach((d,i)=>{ const s = d.data();
-        const {deb, fin} = parseHeure(s.heure);
-        batch.set(doc(collection(db,"arrivants",ref.id,"planning")),
-          { date:addDays(dateArrivee, s.off||0), debut:hhmm(deb), fin:hhmm(fin),
-            heure:labelHeure(deb,fin), activite:s.activite||"", ordre:i }); });
-      await batch.commit();
-    }
-    $("dlg-nouveau").close(); ouvrirDetail(ref.id);
-  });
-
-  /* Checklist prérequis */
-  $("corps-checklist").addEventListener("change", async e => {
-    const el = e.target, id = el.dataset.id; if(!id) return;
-    if(el.dataset.action === "fait"){
-      await updateDoc(doc(db,"arrivants",idCourant,"taches",id), { fait: el.checked });
-      await updateDoc(doc(db,"arrivants",idCourant), { nbFaites: increment(el.checked ? 1 : -1) });
-    }
-    if(el.dataset.action === "date"){
-      await updateDoc(doc(db,"arrivants",idCourant,"taches",id), { date: el.value });
-    }
-  });
-  $("corps-checklist").addEventListener("click", async e => {
-    const b = e.target.closest("button[data-action]"); if(!b) return;
-    const id = b.dataset.id;
-    if(b.dataset.action === "edit"){ editionId = id; renderChecklist(); }
-    if(b.dataset.action === "cancel"){ editionId = null; renderChecklist(); }
-    if(b.dataset.action === "save"){
-      await updateDoc(doc(db,"arrivants",idCourant,"taches",id),
-        { description: $("edit-desc").value.trim(), date: $("edit-date").value });
-      editionId = null;
-    }
-    if(b.dataset.action === "del"){
-      if(!confirm("Supprimer ce prérequis ?")) return;
-      const fait = docsTaches.find(d=>d.id===id)?.data().fait;
-      await deleteDoc(doc(db,"arrivants",idCourant,"taches",id));
-      await updateDoc(doc(db,"arrivants",idCourant), { nbTaches: increment(-1), nbFaites: increment(fait ? -1 : 0) });
-    }
-  });
-  $("form-tache").addEventListener("submit", async e => {
-    e.preventDefault();
-    const desc = $("tache-desc").value.trim(); if(!desc) return;
-    await addDoc(collection(db,"arrivants",idCourant,"taches"),
-      { description: desc, date: $("tache-date").value || "", fait:false, ordre: Date.now() });
-    await updateDoc(doc(db,"arrivants",idCourant), { nbTaches: increment(1) });
-    e.target.reset();
-  });
-
-  /* Modèle type */
-  $("corps-modele-taches").addEventListener("click", async e => {
-    const b = e.target.closest("button"); if(!b) return;
-    if(b.dataset.mtSave){
-      const id = b.dataset.mtSave;
-      const desc = document.querySelector(`[data-mt-desc="${id}"]`).value.trim();
-      const off  = parseInt(document.querySelector(`[data-mt-off="${id}"]`).value, 10) || 0;
-      if(desc) await updateDoc(doc(db,"modele","standard","taches",id), { description: desc, off });
-    }
-    if(b.dataset.mtDel){
-      if(confirm("Supprimer ce prérequis type ?")) await deleteDoc(doc(db,"modele","standard","taches",b.dataset.mtDel));
-    }
-  });
-  $("form-modele-tache").addEventListener("submit", async e => {
-    e.preventDefault();
-    const desc = $("mt-desc").value.trim(); if(!desc) return;
-    await addDoc(COL_MODELE_TACHES(),
-      { description: desc, off: parseInt($("mt-off").value,10)||0, ordre: Date.now() });
-    e.target.reset(); $("mt-off").value = 0;
-  });
-  $("corps-modele-planning").addEventListener("click", async e => {
-    const b = e.target.closest("button"); if(!b) return;
-    if(b.dataset.mpSave){
-      const id = b.dataset.mpSave;
-      const off   = parseInt(document.querySelector(`[data-mp-off="${id}"]`).value, 10) || 0;
-      const heure = document.querySelector(`[data-mp-heure="${id}"]`).value.trim();
-      const act   = document.querySelector(`[data-mp-act="${id}"]`).value.trim();
-      if(act) await updateDoc(doc(db,"modele","standard","planning",id), { off, heure, activite: act });
-    }
-    if(b.dataset.mpDel){
-      if(confirm("Supprimer ce créneau type ?")) await deleteDoc(doc(db,"modele","standard","planning",b.dataset.mpDel));
-    }
-  });
-  $("form-modele-slot").addEventListener("submit", async e => {
-    e.preventDefault();
-    const act = $("ms-activite").value.trim(); if(!act) return;
-    await addDoc(COL_MODELE_PLANNING(),
-      { off: parseInt($("ms-off").value,10)||0, heure: $("ms-heure").value.trim(), activite: act, ordre: Date.now() });
-    e.target.reset(); $("ms-off").value = 0;
-  });
-
-  /* ----- Gestion des utilisateurs (admin) ----- */
-  $("form-user").addEventListener("submit", async e => {
-    e.preventDefault();
-    const email = $("us-email").value.trim().toLowerCase();
-    const mdp   = $("us-mdp").value;
-    const role  = $("us-role").value;
-    const nom   = $("us-nom").value.trim();
-    const msg   = $("user-msg");
-    msg.className = "message";
-    try {
-      const cred = await createUserWithEmailAndPassword(authSecondaire, email, mdp);
-      await signOut(authSecondaire);                      // on ne reste pas connecté sur le compte créé
-      await setDoc(doc(db,"utilisateurs",cred.user.uid),
-        { uid: cred.user.uid, email, nom, role, actif:true, creeLe: serverTimestamp() });
-      msg.className = "message ok";
-      msg.textContent = `✅ Compte créé pour ${email}. Communiquez-lui son mot de passe temporaire (il pourra le changer via « Mot de passe oublié »).`;
-      e.target.reset();
-    } catch(err){
-      msg.className = "message erreur";
-      msg.textContent = traduireErreur(err.code, err.message);
-    }
-  });
-  $("corps-users").addEventListener("click", async e => {
-    const b = e.target.closest("button"); if(!b) return;
-    const moi = auth.currentUser ? auth.currentUser.uid : null;
-    if(b.dataset.uRole){
-      const id = b.dataset.uRole;
-      const u = docsUsers.find(d=>d.id===id)?.data(); if(!u) return;
-      const nouveau = u.role === "admin" ? "user" : "admin";
-      if(id === moi && nouveau === "user" &&
-         !confirm("Vous allez perdre vos droits admin (donc l'accès à cette page). Continuer ?")) return;
-      await updateDoc(doc(db,"utilisateurs",id), { role: nouveau });
-    }
-    if(b.dataset.uActif){
-      const id = b.dataset.uActif;
-      const u = docsUsers.find(d=>d.id===id)?.data(); if(!u) return;
-      if(id === moi){ alert("Vous ne pouvez pas désactiver votre propre compte."); return; }
-      await updateDoc(doc(db,"utilisateurs",id), { actif: u.actif === false });
-    }
-  });
-
-  $("btn-suppr-arrivant").onclick = async () => {
-    if(!confirm("Supprimer définitivement cet arrivant et tout son suivi ?")) return;
-    const snaps = await Promise.all([ getDocs(collection(db,"arrivants",idCourant,"taches")),
-                                      getDocs(collection(db,"arrivants",idCourant,"planning")) ]);
-    const batch = writeBatch(db);
-    snaps.forEach(s => s.docs.forEach(d => batch.delete(d.ref)));
-    batch.delete(doc(db,"arrivants",idCourant));
-    await batch.commit(); retourListe();
-  };
-
-  /* Abonnements temps réel */
-  assurerModele();
-  onSnapshot(query(collection(db,"arrivants"), orderBy("creeLe","desc")),
-    s => renderListe(s.docs), err => console.error("Erreur liste :", err));
-  onSnapshot(query(COL_MODELE_TACHES(), orderBy("ordre")),
-    s => renderModeleTaches(s.docs), err => console.error("Erreur modèle tâches :", err));
-  onSnapshot(query(COL_MODELE_PLANNING(), orderBy("ordre")),
-    s => renderModelePlanning(s.docs), err => console.error("Erreur modèle planning :", err));
-  onSnapshot(query(collection(db,"utilisateurs"), orderBy("email")),
-    s => { docsUsers = s.docs; renderUsers(s.docs); }, err => console.error("Erreur utilisateurs :", err));
-}
-
-/* ---------- Connexion + profil utilisateur ---------- */
-onAuthStateChanged(auth, async user => {
-  if(user){
-    /* 1) Profil Firestore : créé à la première connexion (le 1er compte devient admin) */
-    try {
-      const ref = doc(db,"utilisateurs",user.uid);
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        const cnt = await getCountFromServer(query(collection(db,"utilisateurs")));
-        const role = (cnt.data().count === 0) ? "admin" : "user";
-        await setDoc(ref, { uid:user.uid, email:user.email||"", nom:"", role, actif:true, creeLe:serverTimestamp() });
-      }
-    } catch(err){ console.error("Profil utilisateur :", err); }
-
-    /* 2) Surveillance de mon profil (rôle + désactivation) */
-    if(unsubProfil) unsubProfil();
-    unsubProfil = onSnapshot(doc(db,"utilisateurs",user.uid), s => {
-      const p = s.data();
-      if(p && p.actif === false){
-        msgApresDeconnexion = "Compte désactivé. Contactez votre administrateur.";
-        signOut(auth);
-        return;
-      }
-      monRole = p ? p.role : "user";
-      majBtnUsers();
-    });
-
-    $("vue-auth").style.display = "none";
-    $("app").hidden = false;
-    $("user-email").textContent = user.email;
-    demarrer();
-  } else {
-    if(unsubProfil){ unsubProfil(); unsubProfil = null; }
-    monRole = null; majBtnUsers();
-    $("app").hidden = true;
-    $("vue-auth").style.display = "flex";
-    if(msgApresDeconnexion){ afficherMessageAuth(msgApresDeconnexion, "erreur"); msgApresDeconnexion = null; }
-    else effacerMessageAuth();
-    fermerDetail();
-    cacherSections(); $("vue-liste").hidden = false;
-    appDemarree = false;
-  }
-});
-
-/* ---------- Événements login ---------- */
-$("form-login").addEventListener("submit", gestionLogin);
-$("btn-forgot").addEventListener("click", gestionForgot);
-$("btn-deconnexion").addEventListener("click", gestionDeconnexion);
-
-if(/COLLEZ|VOTRE_PROJET/.test(firebaseConfig.apiKey + firebaseConfig.projectId)){
-  $("cfg-warning").hidden = false;
-}
+  window.demarrerApp();
 </script>
 </body>
 </html>
