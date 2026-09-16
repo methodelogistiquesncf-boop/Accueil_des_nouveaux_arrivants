@@ -1,5 +1,5 @@
 /* Service worker : coquille de l'app disponible hors-ligne */
-const CACHE = "onboarding-v1";
+const CACHE = "onboarding-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,7 +16,6 @@ const APP_SHELL = [
   "./js/detail.js",
   "./js/main.js",
   "./js/pwa.js",
-  "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
 
