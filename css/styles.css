@@ -39,7 +39,7 @@ h2{font-size:18px;margin:18px 0 10px} h3{margin:26px 0 8px;color:#1565c0}
 .droite{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .vide{color:#667;font-style:italic}
 .warning{background:#fff3cd;border:1px solid #ffc107;padding:10px 16px;text-align:center;font-weight:600}
-dialog{border:none;border-radius:12px;padding:20px;width:min(420px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+dialog{border:none;border-radius:12px;padding:20px;width:min(460px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
 dialog::backdrop{background:rgba(0,0,0,.4)}
 dialog label{display:block;margin-bottom:12px;font-size:14px;font-weight:600}
 dialog input{display:block;width:100%;margin-top:4px;border:1px solid var(--bord);border-radius:8px;padding:8px;font:inherit;font-weight:400}
@@ -105,3 +105,32 @@ dialog input{display:block;width:100%;margin-top:4px;border:1px solid var(--bord
 .logo{width:34px;height:34px;border-radius:8px;vertical-align:-9px;margin-right:8px;
       box-shadow:0 1px 4px rgba(0,0,0,.25)}
 .boite-auth .logo{width:72px;height:72px;border-radius:16px;display:block;margin:0 auto 12px;vertical-align:0}
+
+/* ===== Impression & capture du planning ===== */
+.print-only{display:none}
+body.capture-en-cours .print-only{display:block}
+body.capture-en-cours .sem-grip{display:none}
+
+@page{ size:A4 landscape; margin:8mm; }
+@media print{
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body.impression-planning header,
+  body.impression-planning #vue-auth,
+  body.impression-planning #vue-liste,
+  body.impression-planning #vue-modele,
+  body.impression-planning #vue-users,
+  body.impression-planning #btn-retour,
+  body.impression-planning .entete-detail,
+  body.impression-planning #bloc-checklist,
+  body.impression-planning #bloc-planning > h3,
+  body.impression-planning .sem-outils,
+  body.impression-planning .aide,
+  body.impression-planning #sem-sans-date{ display:none !important; }
+  body.impression-planning .print-only{ display:block; }
+  body.impression-planning main{ max-width:none; margin:0; padding:0; }
+  body.impression-planning .sem-conteneur{ border:none; padding:0; border-radius:0; overflow:visible; }
+  body.impression-planning .sem-entetes,
+  body.impression-planning .sem-corps{ grid-template-columns:45px repeat(7,1fr); }
+  body.impression-planning .sem-slot{ box-shadow:none; }
+  body.impression-planning .sem-grip{ display:none; }
+}
