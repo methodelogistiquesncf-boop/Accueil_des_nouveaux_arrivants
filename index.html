@@ -53,23 +53,26 @@
   .coche input{width:auto;margin:0}
   .dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
 
-  /* ===== CALENDRIER ===== */
-  .cal-outils{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
-  #cal-titre{font-weight:700;text-transform:capitalize;min-width:170px;text-align:center;font-size:15px}
-  .cal-grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:#fff;border:1px solid var(--bord);border-radius:10px;padding:8px}
-  .cal-jon{font-size:12px;font-weight:700;color:#1565c0;text-transform:capitalize;text-align:center;padding:4px 0}
-  .cal-cell{min-height:104px;border:1px solid #e6ebf1;border-radius:8px;padding:4px 6px;background:#fbfcfe;display:flex;flex-direction:column;gap:3px;overflow:auto}
-  .cal-cell.hors{background:#f2f4f7;color:#aab}
-  .cal-cell.hors .cal-num{color:#aab}
-  .cal-cell.aujourdhui{outline:2px solid var(--bleu)}
-  .cal-num{font-size:12px;font-weight:700;color:#556;display:flex;justify-content:space-between;align-items:center}
-  .cal-add{background:none;border:none;cursor:pointer;color:var(--bleu);font-size:15px;line-height:1;padding:0 2px;visibility:hidden}
-  .cal-cell:hover .cal-add{visibility:visible}
-  .cal-slot{background:var(--bleu-clair);border-radius:6px;padding:2px 6px;font-size:11px;cursor:pointer;display:flex;gap:5px;align-items:baseline}
+  /* ===== PLANNING SEMAINE (grille horaire) ===== */
+  .sem-outils{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+  #sem-titre{font-weight:700;min-width:230px;text-align:center;font-size:15px;text-transform:capitalize}
+  .sem-conteneur{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px;overflow-x:auto}
+  .sem-entetes,.sem-corps{display:grid;grid-template-columns:64px repeat(7,minmax(148px,1fr))}
+  .sem-jour{font-size:12px;font-weight:700;color:#1565c0;text-transform:capitalize;text-align:center;padding:6px 4px;border-bottom:2px solid var(--bleu-clair)}
+  .sem-jour.auj{background:var(--bleu-clair);border-radius:6px 6px 0 0}
+  .sem-gutter{border-right:1px solid var(--bord)}
+  .sem-heure{font-size:11px;color:#778;text-align:right;padding:2px 6px 0 0;border-top:1px solid #eef1f5}
+  .sem-col{position:relative;border-right:1px solid #eef1f5;cursor:cell;
+    background:repeating-linear-gradient(to bottom, transparent 0 43px, #eef1f5 43px 44px)}
+  .sem-col.auj{background-color:#f4f9ff}
+  .sem-slot{position:absolute;left:3px;right:3px;background:var(--bleu-clair);border-left:3px solid var(--bleu);
+    border-radius:4px;padding:2px 6px;font-size:11px;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.10)}
+  .sem-slot:hover{background:#cfe3f7}
+  .sem-slot b{color:#1565c0;display:block;font-size:10px}
+  #sem-sans-date .cal-slot{display:inline-flex;margin:2px}
+  .cal-slot{background:var(--bleu-clair);border-radius:6px;padding:2px 6px;font-size:11px;cursor:pointer;display:inline-flex;gap:5px;align-items:baseline}
   .cal-slot:hover{background:#cfe3f7}
   .cal-h{font-weight:700;color:#1565c0;white-space:nowrap}
-  .cal-a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #cal-sans-date .cal-slot{display:inline-flex;margin:2px}
 
   /* ===== PAGE LOGIN ===== */
   #vue-auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
@@ -161,23 +164,28 @@
         <button class="btn" type="submit">Ajouter</button>
       </form>
 
-      <h3>📅 Planning des premiers jours (calendrier)</h3>
-      <div class="cal-outils">
-        <button class="btn-secondaire" id="cal-prev" title="Mois précédent">‹</button>
-        <span id="cal-titre"></span>
-        <button class="btn-secondaire" id="cal-next" title="Mois suivant">›</button>
-        <button class="btn-secondaire" id="cal-aujourd">Aujourd'hui</button>
-        <button class="btn" id="cal-ajout">＋ Créneau</button>
+      <h3>📅 Planning des premiers jours (semaine, vue horaire)</h3>
+      <div class="sem-outils">
+        <button class="btn-secondaire" id="sem-prev" title="Semaine précédente">‹</button>
+        <span id="sem-titre"></span>
+        <button class="btn-secondaire" id="sem-next" title="Semaine suivante">›</button>
+        <button class="btn-secondaire" id="sem-aujourd">Cette semaine</button>
+        <button class="btn" id="sem-ajout">＋ Créneau</button>
       </div>
-      <div id="calendrier" class="cal-grille"></div>
-      <p id="cal-sans-date" class="vide"></p>
+      <div class="sem-conteneur">
+        <div class="sem-entetes" id="sem-entetes"></div>
+        <div class="sem-corps" id="sem-corps"></div>
+        <p id="sem-sans-date" class="vide" style="padding:6px 4px"></p>
+      </div>
+      <p class="aide" style="margin-top:8px">💡 Cliquez dans une colonne <b>à la hauteur de l'heure voulue</b> pour créer un créneau à cette heure ;
+      cliquez sur un créneau pour le modifier ou le supprimer. Les créneaux sont dimensionnés selon leur durée.</p>
     </section>
 
     <!-- ===== VUE MODÈLE TYPE ===== -->
     <section id="vue-modele" hidden>
       <button class="btn" id="btn-retour-modele">← Retour à la liste</button>
       <h2>⚙️ Modèle type – propositions standard</h2>
-      <p class="aide">Les <b>tâches type</b> alimentent la checklist des <b>prérequis</b> ; les <b>créneaux type</b> alimentent le <b>calendrier</b>.
+      <p class="aide">Les <b>tâches type</b> alimentent la checklist des <b>prérequis</b> ; les <b>créneaux type</b> alimentent le <b>planning</b>.
       Ils sont repris à chaque création d'arrivant (case « Charger les propositions type »).
       <b>Décalage (j)</b> = jours par rapport à J0 (date d'arrivée) : <b>-5</b> = J‑5, <b>0</b> = jour J, <b>1</b> = lendemain.
       Modifiez les lignes puis 💾.<br>
@@ -195,7 +203,7 @@
         <button class="btn" type="submit">Ajouter</button>
       </form>
 
-      <h3>📅 Créneaux type (calendrier)</h3>
+      <h3>📅 Créneaux type (planning)</h3>
       <table class="tableau">
         <thead><tr><th style="width:15%">Décalage (j)</th><th style="width:25%">Horaire</th><th style="width:45%">Activité</th><th style="width:15%">Actions</th></tr></thead>
         <tbody id="corps-modele-planning"></tbody>
@@ -228,7 +236,7 @@
   <form id="form-slot-edit">
     <h3 id="dlg-slot-titre">Créneau</h3>
     <label>Date<input type="date" id="sl-date" required></label>
-    <label>Horaire<input type="text" id="sl-heure" placeholder="ex : 09:00–11:00"></label>
+    <label>Horaire<input type="text" id="sl-heure" placeholder="ex : 09:00–11:00 ou 13:00"></label>
     <label>Activité<input type="text" id="sl-act" required></label>
     <div class="dlg-actions">
       <button type="button" class="btn btn-gris" id="sl-annuler">Annuler</button>
@@ -256,6 +264,11 @@ const firebaseConfig = {
   appId: "1:252923959783:web:5451cc95fa4ce3b0418542"
 };
 /* ========================================================= */
+
+/* ----- Réglages de la vue semaine ----- */
+const DEBUT_JOURNEE = 7;    // première heure affichée
+const FIN_JOURNEE   = 19;   // dernière heure affichée (exclue)
+const HOUR_H        = 44;   // hauteur d'une heure en pixels
 
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
@@ -302,6 +315,19 @@ const parseISO = s => { const [y,m,d] = s.split("-").map(Number); return new Dat
 const toISO = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const addDays = (iso, off) => { const d = parseISO(iso); d.setDate(d.getDate()+off); return toISO(d); };
 const fmtLong = iso => iso ? parseISO(iso).toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
+const lundiDe = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; };
+
+/* Extrait début/fin (en heures décimales) d'un horaire : "08:00–09:00", "13:00", "9h00-11h00"… */
+function parseHeure(str){
+  const m = (str||"").match(/(\d{1,2})[:hH](\d{2})?/g) || [];
+  const vals = m.map(x=>{ const p = x.match(/(\d{1,2})[:hH](\d{2})?/); return (+p[1]) + (p[2] ? (+p[2])/60 : 0); });
+  let deb = vals.length ? vals[0] : 9;
+  let fin = vals.length > 1 ? vals[1] : deb + 1;
+  if(fin <= deb) fin = deb + 1;
+  deb = Math.min(Math.max(deb, DEBUT_JOURNEE), FIN_JOURNEE - 0.5);
+  fin = Math.min(Math.max(fin, deb + 0.5), FIN_JOURNEE);
+  return { deb, fin };
+}
 
 /* ---------- Messages d'erreur Firebase en français ---------- */
 const ERREURS_FR = {
@@ -344,7 +370,7 @@ const gestionDeconnexion = () => signOut(auth);
 
 /* ---------- État applicatif ---------- */
 let idCourant = null, arrivantCourant = null, docsTaches = [], docsPlanning = [],
-    editionId = null, unsubsDetail = [], calMois = null, slotEditId = null;
+    editionId = null, unsubsDetail = [], semDebut = null, slotEditId = null;
 
 /* ---------- Rendus ---------- */
 function renderListe(docs){
@@ -356,7 +382,7 @@ function renderListe(docs){
       <div class="carte-tete"><strong>${esc(a.nom)}</strong><span class="badge">${esc(a.matricule||"")}</span></div>
       <div>Arrivée : <b>${fmtLong(a.dateArrivee)}</b></div>
       <div class="jauge"><div style="width:${pct}%"></div></div>
-      <div class="carte-pied"><span>${faites}/${total} tâches faites (${pct} %)</span>
+      <div class="carte-pied"><span>${faites}/${total} prérequis faits (${pct} %)</span>
       <button class="btn" data-ouvrir="${d.id}">Ouvrir →</button></div></div>`;
   }).join("");
 }
@@ -367,10 +393,9 @@ function renderEntete(){
   const total = a.nbTaches||0, faites = a.nbFaites||0, pct = total ? Math.round(faites/total*100) : 0;
   $("jauge-plein").style.width = pct+"%";
   $("jauge-texte").textContent = `${faites}/${total} prérequis faits (${pct} %)`;
-  if(!calMois){
-    const d = a.dateArrivee ? parseISO(a.dateArrivee) : new Date();
-    calMois = new Date(d.getFullYear(), d.getMonth(), 1);
-    renderCalendrier();
+  if(!semDebut){
+    semDebut = lundiDe(a.dateArrivee ? parseISO(a.dateArrivee) : new Date());
+    renderSemaine();
   }
 }
 function renderChecklist(){
@@ -394,41 +419,49 @@ function renderChecklist(){
   }).join("") || `<tr><td colspan="4" class="vide">Aucun prérequis.</td></tr>`;
 }
 
-/* ---------- Calendrier mensuel ---------- */
-function renderCalendrier(){
-  if(!calMois) return;
+/* ---------- Planning : vue semaine horaire ---------- */
+function renderSemaine(){
+  if(!semDebut) return;
+  const jours = [...Array(7)].map((_,i)=> new Date(semDebut.getFullYear(), semDebut.getMonth(), semDebut.getDate()+i));
+  const auj = toISO(new Date());
+  $("sem-titre").textContent = "Semaine du " + semDebut.toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
+
+  $("sem-entetes").innerHTML = `<div class="sem-coin"></div>` + jours.map(d =>
+    `<div class="sem-jour ${toISO(d)===auj?"auj":""}">${d.toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit"})}</div>`).join("");
+
   const parJour = new Map();
   docsPlanning.forEach(d => { const s = {id:d.id, ...d.data()}, k = s.date || "sans";
     if(!parJour.has(k)) parJour.set(k, []); parJour.get(k).push(s); });
   parJour.forEach(l => l.sort((a,b)=>(a.heure||"").localeCompare(b.heure||"")));
 
-  $("cal-titre").textContent = calMois.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
-  const an = calMois.getFullYear(), mois = calMois.getMonth();
-  const premier = new Date(an, mois, 1);
-  const cur = new Date(an, mois, 1 - ((premier.getDay()+6)%7));   // grille démarre lundi
-  const aujourdhui = toISO(new Date());
+  const H = (FIN_JOURNEE - DEBUT_JOURNEE) * HOUR_H;
+  let html = `<div class="sem-gutter" style="height:${H}px">` +
+    [...Array(FIN_JOURNEE-DEBUT_JOURNEE)].map((_,i)=>
+      `<div class="sem-heure" style="height:${HOUR_H}px">${String(DEBUT_JOURNEE+i).padStart(2,"0")}:00</div>`).join("") +
+    `</div>`;
 
-  let html = ["lun","mar","mer","jeu","ven","sam","dim"].map(j=>`<div class="cal-jon">${j}</div>`).join("");
-  for(let i=0;i<42;i++){
-    const iso = toISO(cur);
+  jours.forEach(d => {
+    const iso = toISO(d);
     const slots = parJour.get(iso)||[];
-    html += `<div class="cal-cell ${cur.getMonth()!==mois?"hors":""} ${iso===aujourdhui?"aujourdhui":""}">
-      <div class="cal-num">${cur.getDate()}<button class="cal-add" data-cal-add="${iso}" title="Ajouter un créneau ce jour">＋</button></div>
-      ${slots.map(s=>`<div class="cal-slot" data-cal-edit="${s.id}" title="${esc(s.heure||"")} – ${esc(s.activite)}">
-        <span class="cal-h">${esc(s.heure||"")}</span><span class="cal-a">${esc(s.activite)}</span></div>`).join("")}
-    </div>`;
-    cur.setDate(cur.getDate()+1);
-  }
-  $("calendrier").innerHTML = html;
+    html += `<div class="sem-col ${iso===auj?"auj":""}" data-jour="${iso}" style="height:${H}px">` +
+      slots.map(s => {
+        const {deb, fin} = parseHeure(s.heure);
+        const top = (deb - DEBUT_JOURNEE) * HOUR_H;
+        const h   = Math.max(22, (fin - deb) * HOUR_H - 2);
+        return `<div class="sem-slot" data-cal-edit="${s.id}" style="top:${top}px;height:${h}px"
+          title="${esc(s.heure||"")} – ${esc(s.activite)}"><b>${esc(s.heure||"")}</b>${esc(s.activite)}</div>`;
+      }).join("") + `</div>`;
+  });
+  $("sem-corps").innerHTML = html;
 
   const sans = parJour.get("sans")||[];
-  $("cal-sans-date").innerHTML = sans.length
+  $("sem-sans-date").innerHTML = sans.length
     ? "Créneaux sans date : " + sans.map(s=>`<span class="cal-slot" data-cal-edit="${s.id}">
-        <span class="cal-h">${esc(s.heure||"")}</span><span class="cal-a">${esc(s.activite)}</span></span>`).join("")
+        <span class="cal-h">${esc(s.heure||"")}</span> ${esc(s.activite)}</span>`).join("")
     : "";
 }
 
-function ouvrirDlgSlot(id, dateDefaut){
+function ouvrirDlgSlot(id, dateDefaut, heureDefaut){
   slotEditId = id || null;
   if(id){
     const s = docsPlanning.find(d=>d.id===id)?.data(); if(!s) return;
@@ -437,7 +470,7 @@ function ouvrirDlgSlot(id, dateDefaut){
     $("sl-suppr").style.display = "";
   } else {
     $("dlg-slot-titre").textContent = "Nouveau créneau";
-    $("sl-date").value = dateDefaut||""; $("sl-heure").value = ""; $("sl-act").value = "";
+    $("sl-date").value = dateDefaut||""; $("sl-heure").value = heureDefaut||""; $("sl-act").value = "";
     $("sl-suppr").style.display = "none";
   }
   $("dlg-slot").showModal();
@@ -467,7 +500,7 @@ function renderModelePlanning(docs){
 }
 
 /* ---------- Navigation ---------- */
-function fermerDetail(){ unsubsDetail.forEach(u=>u()); unsubsDetail = []; idCourant = null; calMois = null; }
+function fermerDetail(){ unsubsDetail.forEach(u=>u()); unsubsDetail = []; idCourant = null; semDebut = null; }
 function ouvrirDetail(id){
   fermerDetail(); idCourant = id;
   $("vue-liste").hidden = true; $("vue-modele").hidden = true; $("vue-detail").hidden = false;
@@ -492,7 +525,7 @@ function ouvrirDetail(id){
         const ta=a.data(), tb=b.data();
         return (ta.date||"").localeCompare(tb.date||"") || (ta.heure||"").localeCompare(tb.heure||"");
       });
-      renderCalendrier();
+      renderSemaine();
     },
     err => console.error("Erreur planning :", err)));
 }
@@ -569,23 +602,27 @@ function demarrer(){
   $("btn-annuler").onclick = () => $("dlg-nouveau").close();
   $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
 
-  /* Calendrier : navigation + ajout + édition */
-  $("cal-prev").onclick = () => { calMois.setMonth(calMois.getMonth()-1); renderCalendrier(); };
-  $("cal-next").onclick = () => { calMois.setMonth(calMois.getMonth()+1); renderCalendrier(); };
-  $("cal-aujourd").onclick = () => { const t = new Date(); calMois = new Date(t.getFullYear(), t.getMonth(), 1); renderCalendrier(); };
-  $("cal-ajout").onclick = () => {
-    const t = new Date();
-    const def = (calMois && calMois.getMonth()===t.getMonth() && calMois.getFullYear()===t.getFullYear())
-      ? toISO(t) : toISO(new Date(calMois.getFullYear(), calMois.getMonth(), 1));
-    ouvrirDlgSlot(null, def);
+  /* Planning semaine : navigation + création à l'heure cliquée + édition */
+  $("sem-prev").onclick = () => { semDebut.setDate(semDebut.getDate()-7); renderSemaine(); };
+  $("sem-next").onclick = () => { semDebut.setDate(semDebut.getDate()+7); renderSemaine(); };
+  $("sem-aujourd").onclick = () => { semDebut = lundiDe(new Date()); renderSemaine(); };
+  $("sem-ajout").onclick = () => {
+    const t = new Date(), lundi = lundiDe(t);
+    const dansSemaine = semDebut.getTime() === lundi.getTime();
+    ouvrirDlgSlot(null, dansSemaine ? toISO(t) : toISO(semDebut), "09:00");
   };
-  $("calendrier").addEventListener("click", e => {
-    const add = e.target.closest("[data-cal-add]");
-    if(add){ ouvrirDlgSlot(null, add.dataset.calAdd); return; }
-    const ed = e.target.closest("[data-cal-edit]");
-    if(ed) ouvrirDlgSlot(ed.dataset.calEdit);
+  $("sem-corps").addEventListener("click", e => {
+    const slot = e.target.closest("[data-cal-edit]");
+    if(slot){ ouvrirDlgSlot(slot.dataset.calEdit); return; }
+    const col = e.target.closest(".sem-col");
+    if(col){
+      const rect = col.getBoundingClientRect();
+      let h = DEBUT_JOURNEE + Math.floor((e.clientY - rect.top) / HOUR_H);
+      h = Math.min(Math.max(h, DEBUT_JOURNEE), FIN_JOURNEE-1);
+      ouvrirDlgSlot(null, col.dataset.jour, String(h).padStart(2,"0")+":00");
+    }
   });
-  $("cal-sans-date").addEventListener("click", e => {
+  $("sem-sans-date").addEventListener("click", e => {
     const ed = e.target.closest("[data-cal-edit]"); if(ed) ouvrirDlgSlot(ed.dataset.calEdit);
   });
   $("sl-annuler").onclick = () => $("dlg-slot").close();
