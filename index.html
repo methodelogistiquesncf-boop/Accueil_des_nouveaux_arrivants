@@ -9,7 +9,7 @@
      - Page login (sans création de compte) + mot de passe oublié
      - Liste des arrivants + fiche détail (checklist + planning)
      - Page "Modèle type" : propositions standard modifiables
-     - Comptes créés uniquement via la console Firebase
+       (stockées sous modele/standard/taches et modele/standard/planning)
 ============================================================= -->
 <style>
   :root{--bleu:#1976d2;--bleu-f:#4a90d9;--bleu-clair:#ddebf7;--vert:#2e7d32;--rouge:#c62828;--gris:#f4f6f8;--bord:#d0d7de}
@@ -236,9 +236,11 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-/* ---------- Propositions type par défaut (contenu de votre Excel) ----------
-   Chargées UNE seule fois dans Firestore (collection "modele") à la première
-   connexion, puis modifiables depuis la page ⚙️ Modèle type.               */
+/* Chemins du modèle type (3 segments = collections valides) */
+const COL_MODELE_TACHES   = () => collection(db,"modele","standard","taches");
+const COL_MODELE_PLANNING = () => collection(db,"modele","standard","planning");
+
+/* ---------- Propositions type par défaut (contenu de votre Excel) ---------- */
 const DEFAUT_MODELE = {
   taches: [
     { off:-5, description:"Commander le PC portable" },
@@ -436,30 +438,25 @@ function retourListe(){
 /* ---------- Initialisation du modèle type (une seule fois) ---------- */
 async function assurerModele(){
   try {
-    const metaRef = doc(db,"modele","meta");
+    const metaRef = doc(db,"modele","standard");
     const metaSnap = await getDoc(metaRef);
     if(metaSnap.exists()) return;                       // déjà initialisé
     const batch = writeBatch(db);
-    DEFAUT_MODELE.taches.forEach((t,i)   => batch.set(doc(collection(db,"modele","taches")),   { ...t, ordre:i }));
-    DEFAUT_MODELE.planning.forEach((s,i) => batch.set(doc(collection(db,"modele","planning")), { ...s, ordre:i }));
+    DEFAUT_MODELE.taches.forEach((t,i)   => batch.set(doc(COL_MODELE_TACHES()),   { ...t, ordre:i }));
+    DEFAUT_MODELE.planning.forEach((s,i) => batch.set(doc(COL_MODELE_PLANNING()), { ...s, ordre:i }));
     batch.set(metaRef, { initialise:true, date: serverTimestamp() });
     await batch.commit();
   } catch(err){ console.error("Initialisation du modèle :", err); }
 }
 
-/* ---------- Démarrage (après connexion) ---------- */
+/* ---------- Démarrage (après connexion) ----------
+   IMPORTANT : les boutons sont câblés AVANT les abonnements aux données,
+   pour que l'interface reste utilisable même si une requête échoue.      */
 let appDemarree = false;
 function demarrer(){
   if(appDemarree) return; appDemarree = true;
-  assurerModele();
 
-  onSnapshot(query(collection(db,"arrivants"), orderBy("creeLe","desc")),
-    s => renderListe(s.docs), err => console.error("Erreur liste :", err));
-  onSnapshot(query(collection(db,"modele","taches"), orderBy("ordre")),
-    s => renderModeleTaches(s.docs), err => console.error("Erreur modèle tâches :", err));
-  onSnapshot(query(collection(db,"modele","planning"), orderBy("ordre")),
-    s => renderModelePlanning(s.docs), err => console.error("Erreur modèle planning :", err));
-
+  /* --- 1) Câblage des boutons et formulaires --- */
   $("btn-retour").onclick = retourListe;
   $("btn-retour-modele").onclick = retourListe;
   $("btn-modele").onclick = ouvrirModele;
@@ -467,7 +464,6 @@ function demarrer(){
   $("btn-annuler").onclick = () => $("dlg-nouveau").close();
   $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
 
-  /* --- Création d'un arrivant + reprise des propositions type --- */
   $("form-nouveau").addEventListener("submit", async e => {
     e.preventDefault();
     const nom = $("nv-nom").value.trim(), dateArrivee = $("nv-date").value;
@@ -475,8 +471,8 @@ function demarrer(){
     let mtDocs = [], mpDocs = [];
     if($("nv-modele").checked){
       const [mt, mp] = await Promise.all([
-        getDocs(query(collection(db,"modele","taches"),   orderBy("ordre"))),
-        getDocs(query(collection(db,"modele","planning"), orderBy("ordre")))
+        getDocs(query(COL_MODELE_TACHES(),   orderBy("ordre"))),
+        getDocs(query(COL_MODELE_PLANNING(), orderBy("ordre")))
       ]);
       mtDocs = mt.docs; mpDocs = mp.docs;
     }
@@ -496,7 +492,6 @@ function demarrer(){
     $("dlg-nouveau").close(); ouvrirDetail(ref.id);
   });
 
-  /* --- Checklist : cochage / date / édition / suppression --- */
   $("corps-checklist").addEventListener("change", async e => {
     const el = e.target, id = el.dataset.id; if(!id) return;
     if(el.dataset.action === "fait"){
@@ -533,7 +528,6 @@ function demarrer(){
     e.target.reset();
   });
 
-  /* --- Planning : ajout / suppression --- */
   $("form-slot").addEventListener("submit", async e => {
     e.preventDefault();
     await addDoc(collection(db,"arrivants",idCourant,"planning"),
@@ -545,23 +539,22 @@ function demarrer(){
     if(confirm("Supprimer ce créneau ?")) await deleteDoc(doc(db,"arrivants",idCourant,"planning",b.dataset.slotDel));
   });
 
-  /* --- Modèle type : modification / ajout / suppression --- */
   $("corps-modele-taches").addEventListener("click", async e => {
     const b = e.target.closest("button"); if(!b) return;
     if(b.dataset.mtSave){
       const id = b.dataset.mtSave;
       const desc = document.querySelector(`[data-mt-desc="${id}"]`).value.trim();
       const off  = parseInt(document.querySelector(`[data-mt-off="${id}"]`).value, 10) || 0;
-      if(desc) await updateDoc(doc(db,"modele","taches",id), { description: desc, off });
+      if(desc) await updateDoc(doc(db,"modele","standard","taches",id), { description: desc, off });
     }
     if(b.dataset.mtDel){
-      if(confirm("Supprimer cette tâche type ?")) await deleteDoc(doc(db,"modele","taches",b.dataset.mtDel));
+      if(confirm("Supprimer cette tâche type ?")) await deleteDoc(doc(db,"modele","standard","taches",b.dataset.mtDel));
     }
   });
   $("form-modele-tache").addEventListener("submit", async e => {
     e.preventDefault();
     const desc = $("mt-desc").value.trim(); if(!desc) return;
-    await addDoc(collection(db,"modele","taches"),
+    await addDoc(COL_MODELE_TACHES(),
       { description: desc, off: parseInt($("mt-off").value,10)||0, ordre: Date.now() });
     e.target.reset(); $("mt-off").value = 0;
   });
@@ -572,21 +565,20 @@ function demarrer(){
       const off   = parseInt(document.querySelector(`[data-mp-off="${id}"]`).value, 10) || 0;
       const heure = document.querySelector(`[data-mp-heure="${id}"]`).value.trim();
       const act   = document.querySelector(`[data-mp-act="${id}"]`).value.trim();
-      if(act) await updateDoc(doc(db,"modele","planning",id), { off, heure, activite: act });
+      if(act) await updateDoc(doc(db,"modele","standard","planning",id), { off, heure, activite: act });
     }
     if(b.dataset.mpDel){
-      if(confirm("Supprimer ce créneau type ?")) await deleteDoc(doc(db,"modele","planning",b.dataset.mpDel));
+      if(confirm("Supprimer ce créneau type ?")) await deleteDoc(doc(db,"modele","standard","planning",b.dataset.mpDel));
     }
   });
   $("form-modele-slot").addEventListener("submit", async e => {
     e.preventDefault();
     const act = $("ms-activite").value.trim(); if(!act) return;
-    await addDoc(collection(db,"modele","planning"),
+    await addDoc(COL_MODELE_PLANNING(),
       { off: parseInt($("ms-off").value,10)||0, heure: $("ms-heure").value.trim(), activite: act, ordre: Date.now() });
     e.target.reset(); $("ms-off").value = 0;
   });
 
-  /* --- Suppression complète d'un arrivant --- */
   $("btn-suppr-arrivant").onclick = async () => {
     if(!confirm("Supprimer définitivement cet arrivant et tout son suivi ?")) return;
     const snaps = await Promise.all([ getDocs(collection(db,"arrivants",idCourant,"taches")),
@@ -596,6 +588,15 @@ function demarrer(){
     batch.delete(doc(db,"arrivants",idCourant));
     await batch.commit(); retourListe();
   };
+
+  /* --- 2) Abonnements temps réel (après le câblage) --- */
+  assurerModele();
+  onSnapshot(query(collection(db,"arrivants"), orderBy("creeLe","desc")),
+    s => renderListe(s.docs), err => console.error("Erreur liste :", err));
+  onSnapshot(query(COL_MODELE_TACHES(), orderBy("ordre")),
+    s => renderModeleTaches(s.docs), err => console.error("Erreur modèle tâches :", err));
+  onSnapshot(query(COL_MODELE_PLANNING(), orderBy("ordre")),
+    s => renderModelePlanning(s.docs), err => console.error("Erreur modèle planning :", err));
 }
 
 /* ---------- Surveillance de la connexion ---------- */
