@@ -10,7 +10,7 @@
   body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--gris);color:#222}
   header{background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
   header h1{margin:0;font-size:20px}
-  main{max-width:1100px;margin:22px auto;padding:0 16px}
+  main{max-width:1750px;margin:18px auto;padding:0 20px}
   h2{font-size:18px;margin:18px 0 10px} h3{margin:26px 0 8px;color:#1565c0}
   .aide{background:#eef5fc;border:1px solid var(--bleu-clair);color:#33506b;border-radius:8px;padding:10px 14px;font-size:13px}
   .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
@@ -43,14 +43,6 @@
   .entete-detail{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px}
   .entete-detail h2{margin:0 0 6px}
   .droite{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .jour{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px 14px;margin-bottom:10px}
-  .jour h4{margin:0 0 8px;color:#1565c0}
-  .jour ul{list-style:none;margin:0;padding:0}
-  .jour li{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px dashed #e0e6ed;flex-wrap:wrap}
-  .jour li input[type=date]{border:1px solid var(--bord);border-radius:6px;padding:4px 6px;font:inherit;font-size:13px}
-  .jour li input[type=text]{border:1px solid var(--bord);border-radius:6px;padding:4px 8px;font:inherit;font-size:13px}
-  .jour li .h-in{width:120px}
-  .jour li .a-in{flex:1;min-width:150px}
   .vide{color:#667;font-style:italic}
   .warning{background:#fff3cd;border:1px solid #ffc107;padding:10px 16px;text-align:center;font-weight:600}
   dialog{border:none;border-radius:12px;padding:20px;width:min(420px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
@@ -60,6 +52,24 @@
   .coche{display:flex!important;align-items:center;gap:8px;font-weight:500!important}
   .coche input{width:auto;margin:0}
   .dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+
+  /* ===== CALENDRIER ===== */
+  .cal-outils{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+  #cal-titre{font-weight:700;text-transform:capitalize;min-width:170px;text-align:center;font-size:15px}
+  .cal-grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:#fff;border:1px solid var(--bord);border-radius:10px;padding:8px}
+  .cal-jon{font-size:12px;font-weight:700;color:#1565c0;text-transform:capitalize;text-align:center;padding:4px 0}
+  .cal-cell{min-height:104px;border:1px solid #e6ebf1;border-radius:8px;padding:4px 6px;background:#fbfcfe;display:flex;flex-direction:column;gap:3px;overflow:auto}
+  .cal-cell.hors{background:#f2f4f7;color:#aab}
+  .cal-cell.hors .cal-num{color:#aab}
+  .cal-cell.aujourdhui{outline:2px solid var(--bleu)}
+  .cal-num{font-size:12px;font-weight:700;color:#556;display:flex;justify-content:space-between;align-items:center}
+  .cal-add{background:none;border:none;cursor:pointer;color:var(--bleu);font-size:15px;line-height:1;padding:0 2px;visibility:hidden}
+  .cal-cell:hover .cal-add{visibility:visible}
+  .cal-slot{background:var(--bleu-clair);border-radius:6px;padding:2px 6px;font-size:11px;cursor:pointer;display:flex;gap:5px;align-items:baseline}
+  .cal-slot:hover{background:#cfe3f7}
+  .cal-h{font-weight:700;color:#1565c0;white-space:nowrap}
+  .cal-a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #cal-sans-date .cal-slot{display:inline-flex;margin:2px}
 
   /* ===== PAGE LOGIN ===== */
   #vue-auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
@@ -135,54 +145,57 @@
         <div class="droite">
           <div class="jauge"><div id="jauge-plein"></div></div>
           <span id="jauge-texte"></span>
-          <button class="btn-secondaire" id="btn-regenere" title="Remplace les tâches et le planning par le modèle type actuel, dates recalculées sur la date d'arrivée">🔄 Regénérer depuis le modèle</button>
+          <button class="btn-secondaire" id="btn-regenere" title="Remplace les prérequis et le planning par le modèle type actuel, dates recalculées">🔄 Regénérer depuis le modèle</button>
           <button class="btn-danger" id="btn-suppr-arrivant">🗑 Supprimer</button>
         </div>
       </div>
 
-      <h3>📋 Checklist d'arrivée</h3>
+      <h3>📋 Prérequis d'arrivée (checklist)</h3>
       <table class="tableau">
-        <thead><tr><th style="width:55%">Descriptions</th><th style="width:18%">Dates</th><th style="width:12%">Fait Oui/Non</th><th style="width:15%">Actions</th></tr></thead>
+        <thead><tr><th style="width:60%">Descriptions</th><th style="width:15%">Dates</th><th style="width:10%">Fait Oui/Non</th><th style="width:15%">Actions</th></tr></thead>
         <tbody id="corps-checklist"></tbody>
       </table>
       <form id="form-tache" class="ligne-form">
-        <input type="text" id="tache-desc" placeholder="Nouvelle tâche…" required />
+        <input type="text" id="tache-desc" placeholder="Nouveau prérequis…" required />
         <input type="date" id="tache-date" />
         <button class="btn" type="submit">Ajouter</button>
       </form>
 
-      <h3>📅 Planning des premiers jours (modifiable)</h3>
-      <div id="planning"></div>
-      <form id="form-slot" class="ligne-form">
-        <input type="date" id="slot-date" required />
-        <input type="text" id="slot-heure" placeholder="Horaire (ex : 09:00–11:00)" style="max-width:190px" />
-        <input type="text" id="slot-activite" placeholder="Activité…" required />
-        <button class="btn" type="submit">Ajouter</button>
-      </form>
+      <h3>📅 Planning des premiers jours (calendrier)</h3>
+      <div class="cal-outils">
+        <button class="btn-secondaire" id="cal-prev" title="Mois précédent">‹</button>
+        <span id="cal-titre"></span>
+        <button class="btn-secondaire" id="cal-next" title="Mois suivant">›</button>
+        <button class="btn-secondaire" id="cal-aujourd">Aujourd'hui</button>
+        <button class="btn" id="cal-ajout">＋ Créneau</button>
+      </div>
+      <div id="calendrier" class="cal-grille"></div>
+      <p id="cal-sans-date" class="vide"></p>
     </section>
 
     <!-- ===== VUE MODÈLE TYPE ===== -->
     <section id="vue-modele" hidden>
       <button class="btn" id="btn-retour-modele">← Retour à la liste</button>
       <h2>⚙️ Modèle type – propositions standard</h2>
-      <p class="aide">Ces propositions (issues de votre fichier Excel) sont reprises à chaque création d'arrivant
-      (case « Charger les propositions type »). <b>Décalage (j)</b> = jours par rapport à J0 (date d'arrivée) :
-      <b>-5</b> = J‑5, <b>0</b> = jour J, <b>1</b> = lendemain. Modifiez les lignes puis 💾.<br>
-      ⚠️ Les arrivants <b>déjà créés</b> conservent leurs dates : utilisez « 🔄 Regénérer depuis le modèle » sur leur fiche pour les réaligner.</p>
+      <p class="aide">Les <b>tâches type</b> alimentent la checklist des <b>prérequis</b> ; les <b>créneaux type</b> alimentent le <b>calendrier</b>.
+      Ils sont repris à chaque création d'arrivant (case « Charger les propositions type »).
+      <b>Décalage (j)</b> = jours par rapport à J0 (date d'arrivée) : <b>-5</b> = J‑5, <b>0</b> = jour J, <b>1</b> = lendemain.
+      Modifiez les lignes puis 💾.<br>
+      ⚠️ Les arrivants <b>déjà créés</b> conservent leurs données : utilisez « 🔄 Regénérer depuis le modèle » sur leur fiche pour les réaligner.</p>
       <p><button class="btn-secondaire" id="btn-reset-modele">♻️ Réinitialiser le modèle aux valeurs d'origine (Excel)</button></p>
 
-      <h3>📋 Tâches type</h3>
+      <h3>📋 Prérequis type (checklist)</h3>
       <table class="tableau">
         <thead><tr><th style="width:70%">Description</th><th style="width:15%">Décalage (j)</th><th style="width:15%">Actions</th></tr></thead>
         <tbody id="corps-modele-taches"></tbody>
       </table>
       <form id="form-modele-tache" class="ligne-form">
-        <input type="text" id="mt-desc" placeholder="Nouvelle tâche type…" required />
+        <input type="text" id="mt-desc" placeholder="Nouveau prérequis type…" required />
         <input type="number" id="mt-off" value="0" style="max-width:110px" title="Décalage en jours par rapport à J0" />
         <button class="btn" type="submit">Ajouter</button>
       </form>
 
-      <h3>📅 Créneaux type (planning)</h3>
+      <h3>📅 Créneaux type (calendrier)</h3>
       <table class="tableau">
         <thead><tr><th style="width:15%">Décalage (j)</th><th style="width:25%">Horaire</th><th style="width:45%">Activité</th><th style="width:15%">Actions</th></tr></thead>
         <tbody id="corps-modele-planning"></tbody>
@@ -207,6 +220,20 @@
     <div class="dlg-actions">
       <button type="button" class="btn btn-gris" id="btn-annuler">Annuler</button>
       <button type="submit" class="btn">Créer</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-slot">
+  <form id="form-slot-edit">
+    <h3 id="dlg-slot-titre">Créneau</h3>
+    <label>Date<input type="date" id="sl-date" required></label>
+    <label>Horaire<input type="text" id="sl-heure" placeholder="ex : 09:00–11:00"></label>
+    <label>Activité<input type="text" id="sl-act" required></label>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-gris" id="sl-annuler">Annuler</button>
+      <button type="button" class="btn-danger" id="sl-suppr">🗑 Supprimer</button>
+      <button type="submit" class="btn">Enregistrer</button>
     </div>
   </form>
 </dialog>
@@ -316,7 +343,8 @@ async function gestionForgot(){
 const gestionDeconnexion = () => signOut(auth);
 
 /* ---------- État applicatif ---------- */
-let idCourant = null, arrivantCourant = null, docsTaches = [], editionId = null, unsubsDetail = [];
+let idCourant = null, arrivantCourant = null, docsTaches = [], docsPlanning = [],
+    editionId = null, unsubsDetail = [], calMois = null, slotEditId = null;
 
 /* ---------- Rendus ---------- */
 function renderListe(docs){
@@ -338,7 +366,12 @@ function renderEntete(){
   $("detail-matricule").textContent = a.matricule || "—";
   const total = a.nbTaches||0, faites = a.nbFaites||0, pct = total ? Math.round(faites/total*100) : 0;
   $("jauge-plein").style.width = pct+"%";
-  $("jauge-texte").textContent = `${faites}/${total} tâches faites (${pct} %)`;
+  $("jauge-texte").textContent = `${faites}/${total} prérequis faits (${pct} %)`;
+  if(!calMois){
+    const d = a.dateArrivee ? parseISO(a.dateArrivee) : new Date();
+    calMois = new Date(d.getFullYear(), d.getMonth(), 1);
+    renderCalendrier();
+  }
 }
 function renderChecklist(){
   $("corps-checklist").innerHTML = docsTaches.map(d => {
@@ -358,23 +391,59 @@ function renderChecklist(){
       <td class="centre">
         <button class="btn-icone" data-action="edit" data-id="${d.id}" title="Modifier">✏️</button>
         <button class="btn-icone" data-action="del"  data-id="${d.id}" title="Supprimer">🗑</button></td></tr>`;
-  }).join("") || `<tr><td colspan="4" class="vide">Aucune tâche.</td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="vide">Aucun prérequis.</td></tr>`;
 }
-/* Planning : chaque créneau est MODIFIABLE (date, horaire, activité) */
-function renderPlanning(docs){
+
+/* ---------- Calendrier mensuel ---------- */
+function renderCalendrier(){
+  if(!calMois) return;
   const parJour = new Map();
-  docs.forEach(d => { const s = {id:d.id, ...d.data()}, k = s.date || "sans";
+  docsPlanning.forEach(d => { const s = {id:d.id, ...d.data()}, k = s.date || "sans";
     if(!parJour.has(k)) parJour.set(k, []); parJour.get(k).push(s); });
-  $("planning").innerHTML = [...parJour.keys()].sort().map(k => `
-    <div class="jour"><h4>📆 ${k==="sans" ? "Sans date" : fmtLong(k)}</h4><ul>
-    ${parJour.get(k).map(s => `<li>
-      <input type="date" data-pl-date="${s.id}" value="${s.date||""}" title="Date du créneau">
-      <input type="text" class="h-in" data-pl-heure="${s.id}" value="${esc(s.heure||"")}" title="Horaire">
-      <input type="text" class="a-in" data-pl-act="${s.id}" value="${esc(s.activite||"")}" title="Activité">
-      <button class="btn-icone" data-pl-save="${s.id}" title="Enregistrer">💾</button>
-      <button class="btn-icone" data-pl-del="${s.id}" title="Supprimer">🗑</button></li>`).join("")}
-    </ul></div>`).join("") || `<p class="vide">Aucun créneau planifié.</p>`;
+  parJour.forEach(l => l.sort((a,b)=>(a.heure||"").localeCompare(b.heure||"")));
+
+  $("cal-titre").textContent = calMois.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+  const an = calMois.getFullYear(), mois = calMois.getMonth();
+  const premier = new Date(an, mois, 1);
+  const cur = new Date(an, mois, 1 - ((premier.getDay()+6)%7));   // grille démarre lundi
+  const aujourdhui = toISO(new Date());
+
+  let html = ["lun","mar","mer","jeu","ven","sam","dim"].map(j=>`<div class="cal-jon">${j}</div>`).join("");
+  for(let i=0;i<42;i++){
+    const iso = toISO(cur);
+    const slots = parJour.get(iso)||[];
+    html += `<div class="cal-cell ${cur.getMonth()!==mois?"hors":""} ${iso===aujourdhui?"aujourdhui":""}">
+      <div class="cal-num">${cur.getDate()}<button class="cal-add" data-cal-add="${iso}" title="Ajouter un créneau ce jour">＋</button></div>
+      ${slots.map(s=>`<div class="cal-slot" data-cal-edit="${s.id}" title="${esc(s.heure||"")} – ${esc(s.activite)}">
+        <span class="cal-h">${esc(s.heure||"")}</span><span class="cal-a">${esc(s.activite)}</span></div>`).join("")}
+    </div>`;
+    cur.setDate(cur.getDate()+1);
+  }
+  $("calendrier").innerHTML = html;
+
+  const sans = parJour.get("sans")||[];
+  $("cal-sans-date").innerHTML = sans.length
+    ? "Créneaux sans date : " + sans.map(s=>`<span class="cal-slot" data-cal-edit="${s.id}">
+        <span class="cal-h">${esc(s.heure||"")}</span><span class="cal-a">${esc(s.activite)}</span></span>`).join("")
+    : "";
 }
+
+function ouvrirDlgSlot(id, dateDefaut){
+  slotEditId = id || null;
+  if(id){
+    const s = docsPlanning.find(d=>d.id===id)?.data(); if(!s) return;
+    $("dlg-slot-titre").textContent = "Modifier le créneau";
+    $("sl-date").value = s.date||""; $("sl-heure").value = s.heure||""; $("sl-act").value = s.activite||"";
+    $("sl-suppr").style.display = "";
+  } else {
+    $("dlg-slot-titre").textContent = "Nouveau créneau";
+    $("sl-date").value = dateDefaut||""; $("sl-heure").value = ""; $("sl-act").value = "";
+    $("sl-suppr").style.display = "none";
+  }
+  $("dlg-slot").showModal();
+}
+
+/* ---------- Rendus modèle type ---------- */
 function renderModeleTaches(docs){
   $("corps-modele-taches").innerHTML = docs.map(d => { const t = d.data();
     return `<tr>
@@ -383,7 +452,7 @@ function renderModeleTaches(docs){
       <td class="centre">
         <button class="btn-icone" data-mt-save="${d.id}" title="Enregistrer">💾</button>
         <button class="btn-icone" data-mt-del="${d.id}" title="Supprimer">🗑</button></td></tr>`;
-  }).join("") || `<tr><td colspan="3" class="vide">Aucune tâche type.</td></tr>`;
+  }).join("") || `<tr><td colspan="3" class="vide">Aucun prérequis type.</td></tr>`;
 }
 function renderModelePlanning(docs){
   $("corps-modele-planning").innerHTML = docs.map(d => { const s = d.data();
@@ -398,7 +467,7 @@ function renderModelePlanning(docs){
 }
 
 /* ---------- Navigation ---------- */
-function fermerDetail(){ unsubsDetail.forEach(u=>u()); unsubsDetail = []; idCourant = null; }
+function fermerDetail(){ unsubsDetail.forEach(u=>u()); unsubsDetail = []; idCourant = null; calMois = null; }
 function ouvrirDetail(id){
   fermerDetail(); idCourant = id;
   $("vue-liste").hidden = true; $("vue-modele").hidden = true; $("vue-detail").hidden = false;
@@ -419,11 +488,11 @@ function ouvrirDetail(id){
 
   unsubsDetail.push(onSnapshot(query(collection(db,"arrivants",id,"planning"), orderBy("date")),
     s => {
-      const docs = s.docs.slice().sort((a,b)=>{
+      docsPlanning = s.docs.slice().sort((a,b)=>{
         const ta=a.data(), tb=b.data();
         return (ta.date||"").localeCompare(tb.date||"") || (ta.heure||"").localeCompare(tb.heure||"");
       });
-      renderPlanning(docs);
+      renderCalendrier();
     },
     err => console.error("Erreur planning :", err)));
 }
@@ -436,7 +505,7 @@ function retourListe(){
   $("vue-detail").hidden = true; $("vue-modele").hidden = true; $("vue-liste").hidden = false;
 }
 
-/* ---------- Initialisation / réinitialisation du modèle type ---------- */
+/* ---------- Modèle type : init / reset ---------- */
 async function assurerModele(){
   try {
     const metaRef = doc(db,"modele","standard");
@@ -459,10 +528,10 @@ async function reinitialiserModele(){
   await assurerModele();
 }
 
-/* ---------- Régénère un arrivant depuis le modèle actuel ---------- */
+/* ---------- Régénérer un arrivant depuis le modèle ---------- */
 async function regenererDepuisModele(){
   const a = arrivantCourant; if(!a) return;
-  if(!confirm("Remplacer TOUTES les tâches et le planning de cet arrivant par le modèle type actuel,\navec dates recalculées sur la date d'arrivée ?\nLes cochages et modifications actuels seront perdus.")) return;
+  if(!confirm("Remplacer TOUS les prérequis et le planning de cet arrivant par le modèle type actuel,\navec dates recalculées sur la date d'arrivée ?\nLes cochages et modifications actuels seront perdus.")) return;
   const [mt, mp] = await Promise.all([
     getDocs(query(COL_MODELE_TACHES(),   orderBy("ordre"))),
     getDocs(query(COL_MODELE_PLANNING(), orderBy("ordre")))
@@ -488,7 +557,6 @@ let appDemarree = false;
 function demarrer(){
   if(appDemarree) return; appDemarree = true;
 
-  /* --- 1) Câblage des boutons et formulaires --- */
   $("btn-retour").onclick = retourListe;
   $("btn-retour-modele").onclick = retourListe;
   $("btn-modele").onclick = ouvrirModele;
@@ -501,6 +569,42 @@ function demarrer(){
   $("btn-annuler").onclick = () => $("dlg-nouveau").close();
   $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
 
+  /* Calendrier : navigation + ajout + édition */
+  $("cal-prev").onclick = () => { calMois.setMonth(calMois.getMonth()-1); renderCalendrier(); };
+  $("cal-next").onclick = () => { calMois.setMonth(calMois.getMonth()+1); renderCalendrier(); };
+  $("cal-aujourd").onclick = () => { const t = new Date(); calMois = new Date(t.getFullYear(), t.getMonth(), 1); renderCalendrier(); };
+  $("cal-ajout").onclick = () => {
+    const t = new Date();
+    const def = (calMois && calMois.getMonth()===t.getMonth() && calMois.getFullYear()===t.getFullYear())
+      ? toISO(t) : toISO(new Date(calMois.getFullYear(), calMois.getMonth(), 1));
+    ouvrirDlgSlot(null, def);
+  };
+  $("calendrier").addEventListener("click", e => {
+    const add = e.target.closest("[data-cal-add]");
+    if(add){ ouvrirDlgSlot(null, add.dataset.calAdd); return; }
+    const ed = e.target.closest("[data-cal-edit]");
+    if(ed) ouvrirDlgSlot(ed.dataset.calEdit);
+  });
+  $("cal-sans-date").addEventListener("click", e => {
+    const ed = e.target.closest("[data-cal-edit]"); if(ed) ouvrirDlgSlot(ed.dataset.calEdit);
+  });
+  $("sl-annuler").onclick = () => $("dlg-slot").close();
+  $("sl-suppr").onclick = async () => {
+    if(slotEditId && confirm("Supprimer ce créneau ?")){
+      await deleteDoc(doc(db,"arrivants",idCourant,"planning",slotEditId));
+      $("dlg-slot").close();
+    }
+  };
+  $("form-slot-edit").addEventListener("submit", async e => {
+    e.preventDefault();
+    const date = $("sl-date").value, heure = $("sl-heure").value.trim(), activite = $("sl-act").value.trim();
+    if(!date || !activite) return;
+    if(slotEditId) await updateDoc(doc(db,"arrivants",idCourant,"planning",slotEditId), { date, heure, activite });
+    else await addDoc(collection(db,"arrivants",idCourant,"planning"), { date, heure, activite, ordre: Date.now() });
+    $("dlg-slot").close();
+  });
+
+  /* Création d'un arrivant */
   $("form-nouveau").addEventListener("submit", async e => {
     e.preventDefault();
     const nom = $("nv-nom").value.trim(), dateArrivee = $("nv-date").value;
@@ -529,6 +633,7 @@ function demarrer(){
     $("dlg-nouveau").close(); ouvrirDetail(ref.id);
   });
 
+  /* Checklist prérequis */
   $("corps-checklist").addEventListener("change", async e => {
     const el = e.target, id = el.dataset.id; if(!id) return;
     if(el.dataset.action === "fait"){
@@ -550,7 +655,7 @@ function demarrer(){
       editionId = null;
     }
     if(b.dataset.action === "del"){
-      if(!confirm("Supprimer cette tâche ?")) return;
+      if(!confirm("Supprimer ce prérequis ?")) return;
       const fait = docsTaches.find(d=>d.id===id)?.data().fait;
       await deleteDoc(doc(db,"arrivants",idCourant,"taches",id));
       await updateDoc(doc(db,"arrivants",idCourant), { nbTaches: increment(-1), nbFaites: increment(fait ? -1 : 0) });
@@ -565,28 +670,7 @@ function demarrer(){
     e.target.reset();
   });
 
-  /* --- Planning : ajout + modification + suppression --- */
-  $("form-slot").addEventListener("submit", async e => {
-    e.preventDefault();
-    await addDoc(collection(db,"arrivants",idCourant,"planning"),
-      { date: $("slot-date").value, heure: $("slot-heure").value.trim(), activite: $("slot-activite").value.trim(), ordre: Date.now() });
-    e.target.reset();
-  });
-  $("planning").addEventListener("click", async e => {
-    const b = e.target.closest("button"); if(!b) return;
-    if(b.dataset.plSave){
-      const id = b.dataset.plSave;
-      const date  = document.querySelector(`[data-pl-date="${id}"]`).value;
-      const heure = document.querySelector(`[data-pl-heure="${id}"]`).value.trim();
-      const act   = document.querySelector(`[data-pl-act="${id}"]`).value.trim();
-      if(act) await updateDoc(doc(db,"arrivants",idCourant,"planning",id), { date, heure, activite: act });
-    }
-    if(b.dataset.plDel){
-      if(confirm("Supprimer ce créneau ?")) await deleteDoc(doc(db,"arrivants",idCourant,"planning",b.dataset.plDel));
-    }
-  });
-
-  /* --- Modèle type --- */
+  /* Modèle type */
   $("corps-modele-taches").addEventListener("click", async e => {
     const b = e.target.closest("button"); if(!b) return;
     if(b.dataset.mtSave){
@@ -596,7 +680,7 @@ function demarrer(){
       if(desc) await updateDoc(doc(db,"modele","standard","taches",id), { description: desc, off });
     }
     if(b.dataset.mtDel){
-      if(confirm("Supprimer cette tâche type ?")) await deleteDoc(doc(db,"modele","standard","taches",b.dataset.mtDel));
+      if(confirm("Supprimer ce prérequis type ?")) await deleteDoc(doc(db,"modele","standard","taches",b.dataset.mtDel));
     }
   });
   $("form-modele-tache").addEventListener("submit", async e => {
@@ -637,7 +721,7 @@ function demarrer(){
     await batch.commit(); retourListe();
   };
 
-  /* --- 2) Abonnements temps réel --- */
+  /* Abonnements temps réel */
   assurerModele();
   onSnapshot(query(collection(db,"arrivants"), orderBy("creeLe","desc")),
     s => renderListe(s.docs), err => console.error("Erreur liste :", err));
@@ -664,7 +748,7 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-/* ---------- Événements de la page login ---------- */
+/* ---------- Événements login ---------- */
 $("form-login").addEventListener("submit", gestionLogin);
 $("btn-forgot").addEventListener("click", gestionForgot);
 $("btn-deconnexion").addEventListener("click", gestionDeconnexion);
