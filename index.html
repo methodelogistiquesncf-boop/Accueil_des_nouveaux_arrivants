@@ -6,10 +6,10 @@
 <title>Onboarding – Accueil des nouveaux arrivants</title>
 <!-- ============================================================
      OUTIL ONBOARDING – Firebase (Auth + Firestore)
-     - Page login + mot de passe oublié
+     - Page login (sans création de compte) + mot de passe oublié
      - Liste des arrivants + fiche détail (checklist + planning)
-     - Page "Modèle type" : propositions standard (issues de votre
-       Excel) modifiables, reprises à chaque nouvel arrivant
+     - Page "Modèle type" : propositions standard modifiables
+     - Comptes créés uniquement via la console Firebase
 ============================================================= -->
 <style>
   :root{--bleu:#1976d2;--bleu-f:#4a90d9;--bleu-clair:#ddebf7;--vert:#2e7d32;--rouge:#c62828;--gris:#f4f6f8;--bord:#d0d7de}
@@ -77,7 +77,6 @@
   .boite-auth .btn{width:100%;padding:12px;font-size:15px;margin-top:8px}
   .boite-auth .btn-lien{background:none;color:var(--bleu);border:none;cursor:pointer;font:inherit;
                         font-size:13px;padding:4px;text-decoration:underline;display:block;margin:12px auto 0}
-  .boite-auth .separateur{text-align:center;margin:18px 0;color:#99a;font-size:12px}
   .message{padding:10px 12px;border-radius:8px;margin-bottom:14px;font-size:13px;display:none}
   .message.ok{background:#e8f5e9;color:var(--vert);border:1px solid #a5d6a7;display:block}
   .message.erreur{background:#ffebee;color:var(--rouge);border:1px solid #ef9a9a;display:block}
@@ -92,11 +91,11 @@
 </head>
 <body>
 
-<!-- ================= VUE LOGIN ================= -->
+<!-- ================= VUE LOGIN (sans création de compte) ================= -->
 <div id="vue-auth">
   <div class="boite-auth">
     <h2>🛬 Onboarding</h2>
-    <p class="sous-titre" id="auth-sous-titre">Connectez-vous pour accéder à l'outil</p>
+    <p class="sous-titre">Connectez-vous pour accéder à l'outil</p>
     <div id="auth-message" class="message"></div>
 
     <form id="form-login">
@@ -104,15 +103,6 @@
       <label>Mot de passe<input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••"></label>
       <button type="submit" class="btn" id="btn-login">Se connecter</button>
       <button type="button" class="btn-lien" id="btn-forgot">Mot de passe oublié ?</button>
-      <div class="separateur"><span>ou</span></div>
-      <button type="button" class="btn-lien" id="btn-vers-signup" style="margin:0">Pas encore de compte ? Créer un compte</button>
-    </form>
-
-    <form id="form-signup" hidden>
-      <label>Adresse email<input type="email" id="signup-email" required autocomplete="email" placeholder="vous@entreprise.fr"></label>
-      <label>Mot de passe (6 caractères min.)<input type="password" id="signup-password" required minlength="6" autocomplete="new-password"></label>
-      <button type="submit" class="btn" id="btn-signup">Créer le compte</button>
-      <button type="button" class="btn-lien" id="btn-vers-login">← Retour à la connexion</button>
     </form>
   </div>
 </div>
@@ -228,8 +218,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, deleteDoc, getDocs,
          onSnapshot, query, orderBy, writeBatch, serverTimestamp, increment }
          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-         sendPasswordResetEmail, signOut, onAuthStateChanged }
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged }
          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* ==================== CONFIG FIREBASE ==================== */
@@ -292,13 +281,11 @@ const fmtLong = iso => iso ? parseISO(iso).toLocaleDateString("fr-FR",{weekday:"
 const ERREURS_FR = {
   "auth/invalid-email":"Adresse email invalide.",
   "auth/user-disabled":"Ce compte a été désactivé.",
-  "auth/user-not-found":"Aucun compte trouvé avec cet email. Créez-le via « Créer un compte » ou dans Firebase Console → Authentication → Users.",
+  "auth/user-not-found":"Aucun compte trouvé avec cet email. Contactez votre administrateur pour qu'il crée votre accès.",
   "auth/wrong-password":"Mot de passe incorrect.",
-  "auth/invalid-credential":"Email ou mot de passe incorrect. Vérifiez : (1) que le compte existe dans Firebase Console → Authentication → Users, (2) le mot de passe — ou utilisez « Mot de passe oublié ».",
-  "auth/email-already-in-use":"Un compte existe déjà avec cet email.",
-  "auth/weak-password":"Mot de passe trop faible (6 caractères minimum).",
+  "auth/invalid-credential":"Email ou mot de passe incorrect. Si vous n'avez pas de compte, contactez votre administrateur.",
   "auth/too-many-requests":"Trop de tentatives. Réessayez dans quelques minutes.",
-  "auth/operation-not-allowed":"Action non activée dans Firebase Console → Authentication → Sign-in method.",
+  "auth/operation-not-allowed":"Connexion email/mot de passe non activée dans la console Firebase.",
   "auth/network-request-failed":"Problème de connexion internet.",
   "auth/missing-password":"Veuillez saisir un mot de passe.",
 };
@@ -307,10 +294,6 @@ const traduireErreur = (code, message) => ERREURS_FR[code] || message || "Une er
 /* ---------- UI Auth ---------- */
 function afficherMessageAuth(txt, type){ const el = $("auth-message"); el.textContent = txt; el.className = "message " + type; }
 function effacerMessageAuth(){ $("auth-message").className = "message"; $("auth-message").textContent = ""; }
-function basculerVersSignup(){ $("form-login").hidden = true; $("form-signup").hidden = false;
-  $("auth-sous-titre").textContent = "Créez votre compte pour accéder à l'outil"; effacerMessageAuth(); }
-function basculerVersLogin(){ $("form-signup").hidden = true; $("form-login").hidden = false;
-  $("auth-sous-titre").textContent = "Connectez-vous pour accéder à l'outil"; effacerMessageAuth(); }
 
 async function gestionLogin(e){
   e.preventDefault();
@@ -322,18 +305,6 @@ async function gestionLogin(e){
   try { await signInWithEmailAndPassword(auth, email, password); }
   catch(err){ afficherMessageAuth(traduireErreur(err.code, err.message) + "  [" + err.code + "]", "erreur"); }
   finally { btn.disabled = false; btn.textContent = "Se connecter"; }
-}
-async function gestionSignup(e){
-  e.preventDefault();
-  const email = $("signup-email").value.trim().toLowerCase();
-  const password = $("signup-password").value;
-  const btn = $("btn-signup");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Création…';
-  effacerMessageAuth();
-  try { await createUserWithEmailAndPassword(auth, email, password);
-        afficherMessageAuth("Compte créé avec succès ! Vous êtes connecté.", "ok"); }
-  catch(err){ afficherMessageAuth(traduireErreur(err.code, err.message) + "  [" + err.code + "]", "erreur"); }
-  finally { btn.disabled = false; btn.textContent = "Créer le compte"; }
 }
 async function gestionForgot(){
   const email = $("login-email").value.trim().toLowerCase();
@@ -433,7 +404,6 @@ function ouvrirDetail(id){
     s => { if(s.exists()){ arrivantCourant = {id:s.id, ...s.data()}; renderEntete(); } },
     err => console.error("Erreur fiche :", err)));
 
-  /* Tri simple côté base + tri final côté JS (évite les index composites) */
   unsubsDetail.push(onSnapshot(query(collection(db,"arrivants",id,"taches"), orderBy("date")),
     s => {
       docsTaches = s.docs.slice().sort((a,b)=>{
@@ -638,7 +608,7 @@ onAuthStateChanged(auth, user => {
   } else {
     $("app").hidden = true;
     $("vue-auth").style.display = "flex";
-    basculerVersLogin();
+    effacerMessageAuth();
     fermerDetail();
     $("vue-detail").hidden = true; $("vue-modele").hidden = true; $("vue-liste").hidden = false;
     appDemarree = false;
@@ -647,10 +617,7 @@ onAuthStateChanged(auth, user => {
 
 /* ---------- Événements de la page login ---------- */
 $("form-login").addEventListener("submit", gestionLogin);
-$("form-signup").addEventListener("submit", gestionSignup);
 $("btn-forgot").addEventListener("click", gestionForgot);
-$("btn-vers-signup").addEventListener("click", basculerVersSignup);
-$("btn-vers-login").addEventListener("click", basculerVersLogin);
 $("btn-deconnexion").addEventListener("click", gestionDeconnexion);
 
 if(/COLLEZ|VOTRE_PROJET/.test(firebaseConfig.apiKey + firebaseConfig.projectId)){
