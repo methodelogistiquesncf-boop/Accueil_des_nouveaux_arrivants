@@ -19,6 +19,7 @@
   .carte-pied{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#556}
   .badge{background:var(--bleu-clair);color:#1565c0;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap}
   .badge-fait{background:#e8f5e9;color:var(--vert)}
+  .badge-off{background:#ffebee;color:var(--rouge)}
   .jauge{background:#e3e8ee;border-radius:8px;height:10px;overflow:hidden;flex:1;min-width:120px}
   .jauge div{background:linear-gradient(90deg,#43a047,#66bb6a);height:100%;width:0;transition:width .3s}
   .tableau{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--bord)}
@@ -39,7 +40,7 @@
   .btn-icone{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px}
   .ligne-form{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
   .ligne-form input[type=text]{flex:1;min-width:200px;border:1px solid var(--bord);border-radius:8px;padding:8px 10px;font:inherit}
-  .ligne-form input[type=date],.ligne-form input[type=number],.ligne-form input[type=time]{border:1px solid var(--bord);border-radius:8px;padding:7px;font:inherit}
+  .ligne-form input[type=date],.ligne-form input[type=number],.ligne-form input[type=time],.ligne-form select{border:1px solid var(--bord);border-radius:8px;padding:7px;font:inherit;background:#fff}
   .entete-detail{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px}
   .entete-detail h2{margin:0 0 6px}
   .droite{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -55,7 +56,7 @@
   .dlg-heures{display:flex;gap:10px}
   .dlg-heures label{flex:1}
 
-  /* ===== PLANNING SEMAINE (grille horaire interactive) ===== */
+  /* ===== PLANNING SEMAINE ===== */
   .sem-outils{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
   #sem-titre{font-weight:700;min-width:230px;text-align:center;font-size:15px;text-transform:capitalize}
   .sem-conteneur{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px;overflow-x:auto}
@@ -132,6 +133,7 @@
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <button class="btn btn-clair" id="btn-nouveau">＋ Nouvel arrivant</button>
       <button class="btn btn-clair" id="btn-modele">⚙️ Modèle type</button>
+      <button class="btn btn-clair" id="btn-users" style="display:none">👥 Utilisateurs</button>
       <div class="user-chip"><span>👤</span><span id="user-email"></span></div>
       <button id="btn-deconnexion">Déconnexion</button>
     </div>
@@ -225,14 +227,44 @@
         <button class="btn" type="submit">Ajouter</button>
       </form>
     </section>
+
+    <!-- ===== VUE UTILISATEURS (admin) ===== -->
+    <section id="vue-users" hidden>
+      <button class="btn" id="btn-retour-users">← Retour à la liste</button>
+      <h2>👥 Gestion des utilisateurs</h2>
+      <p class="aide"><b>Admin</b> = accès à cette page + gestion des comptes · <b>Utilisateur</b> = accès aux arrivants seulement.<br>
+      ⛔ Désactiver un compte lui bloque l'accès à l'outil (réactivable à tout moment).
+      La <b>suppression définitive</b> d'un compte et la <b>réinitialisation de son mot de passe</b> se font dans la
+      console Firebase → Authentication (limitation du mode navigateur).</p>
+
+      <h3>Créer un utilisateur</h3>
+      <form id="form-user" class="ligne-form">
+        <input type="text" id="us-nom" placeholder="Nom (optionnel)" style="max-width:220px" />
+        <input type="email" id="us-email" placeholder="Email" required />
+        <input type="text" id="us-mdp" placeholder="Mot de passe temporaire (6 car. min)" required minlength="6" style="max-width:260px" />
+        <select id="us-role">
+          <option value="user">Utilisateur</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button class="btn" type="submit">Créer le compte</button>
+      </form>
+      <p id="user-msg" class="message"></p>
+
+      <h3>Comptes existants</h3>
+      <table class="tableau">
+        <thead><tr><th style="width:30%">Email</th><th style="width:20%">Nom</th><th style="width:15%">Rôle</th><th style="width:15%">Statut</th><th style="width:20%">Actions</th></tr></thead>
+        <tbody id="corps-users"></tbody>
+      </table>
+      <p class="vide" style="font-size:12px;margin-top:8px">ℹ️ Un compte créé directement dans la console Firebase apparaît dans cette liste à sa première connexion.</p>
+    </section>
   </main>
 </div>
 
 <dialog id="dlg-nouveau">
   <form id="form-nouveau">
     <h3>Nouvel arrivant</h3>
-    <label>Nom complet<input id="nv-nom" required placeholder="Ex : Dupont Marcel"></label>
-    <label>Matricule<input id="nv-matricule" placeholder="Ex : 0906252D"></label>
+    <label>Nom complet<input id="nv-nom" required placeholder="Ex : GUEYE NIANA"></label>
+    <label>Matricule<input id="nv-matricule" placeholder="Ex : 0206152D"></label>
     <label>Date d'arrivée<input id="nv-date" type="date" required></label>
     <label class="coche"><input type="checkbox" id="nv-modele" checked> Charger les propositions type (modèle standard)</label>
     <div class="dlg-actions">
@@ -261,10 +293,11 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, deleteDoc, getDocs,
-         onSnapshot, query, orderBy, writeBatch, serverTimestamp, increment }
+import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs,
+         onSnapshot, query, orderBy, writeBatch, serverTimestamp, increment, getCountFromServer }
          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged }
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         sendPasswordResetEmail, signOut, onAuthStateChanged }
          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* ==================== CONFIG FIREBASE ==================== */
@@ -279,14 +312,14 @@ const firebaseConfig = {
 /* ========================================================= */
 
 /* ----- Réglages de la vue semaine ----- */
-const DEBUT_JOURNEE = 7;    // première heure affichée
-const FIN_JOURNEE   = 19;   // dernière heure affichée (exclue)
-const HOUR_H        = 44;   // hauteur d'une heure en pixels
-const SNAP          = 0.5;  // pas de placement / étirement (en heures : 0.5 = 30 min)
+const DEBUT_JOURNEE = 7, FIN_JOURNEE = 19, HOUR_H = 44, SNAP = 0.5;
 
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
+/* Seconde instance : créer des comptes SANS déconnecter l'admin connecté */
+const appSecondaire  = initializeApp(firebaseConfig, "secondaire");
+const authSecondaire = getAuth(appSecondaire);
 
 const COL_MODELE_TACHES   = () => collection(db,"modele","standard","taches");
 const COL_MODELE_PLANNING = () => collection(db,"modele","standard","planning");
@@ -295,7 +328,7 @@ const COL_MODELE_PLANNING = () => collection(db,"modele","standard","planning");
 const DEFAUT_MODELE = {
   taches: [
     { off:-5, description:"Commander le PC portable" },
-    { off:-5, description:"Récupérer le calendrier d'alternance" },
+    { off:-5, description:"Récupérer le calendrier d'alternance (Seb Dubresson)" },
     { off:-5, description:"Créer compte Reflex (profil Gstock)" },
     { off:-3, description:"Basculer l'écran de Lucas vers l'alternant si possible" },
     { off:-3, description:"Badge accès magasin + badge pour badger (jour d'arrivée donné par RH)" },
@@ -330,8 +363,6 @@ const toISO = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-
 const addDays = (iso, off) => { const d = parseISO(iso); d.setDate(d.getDate()+off); return toISO(d); };
 const fmtLong = iso => iso ? parseISO(iso).toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
 const lundiDe = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; };
-
-/* Heures : conversions */
 const hmToDec = hm => { const p = (hm||"").split(":"); return (+p[0]||0) + ((+p[1]||0)/60); };
 const hhmm = dec => String(Math.floor(dec)).padStart(2,"0") + ":" + String(Math.round((dec%1)*60)).padStart(2,"0");
 function parseHeure(str){
@@ -344,7 +375,6 @@ function parseHeure(str){
   fin = Math.min(Math.max(fin, deb + 0.5), FIN_JOURNEE);
   return { deb, fin };
 }
-/* début/fin d'un créneau : champs debut/fin si présents, sinon horaire libre legacy */
 function normSlot(s){
   if(s && s.debut){
     const d = hmToDec(s.debut), f = s.fin ? hmToDec(s.fin) : d + 1;
@@ -361,6 +391,8 @@ const ERREURS_FR = {
   "auth/user-not-found":"Aucun compte trouvé avec cet email. Contactez votre administrateur pour qu'il crée votre accès.",
   "auth/wrong-password":"Mot de passe incorrect.",
   "auth/invalid-credential":"Email ou mot de passe incorrect. Si vous n'avez pas de compte, contactez votre administrateur.",
+  "auth/email-already-in-use":"Un compte existe déjà avec cet email.",
+  "auth/weak-password":"Mot de passe trop faible (6 caractères minimum).",
   "auth/too-many-requests":"Trop de tentatives. Réessayez dans quelques minutes.",
   "auth/operation-not-allowed":"Connexion email/mot de passe non activée dans la console Firebase.",
   "auth/network-request-failed":"Problème de connexion internet.",
@@ -394,8 +426,9 @@ async function gestionForgot(){
 const gestionDeconnexion = () => signOut(auth);
 
 /* ---------- État applicatif ---------- */
-let idCourant = null, arrivantCourant = null, docsTaches = [], docsPlanning = [],
-    editionId = null, unsubsDetail = [], semDebut = null, slotEditId = null, drag = null;
+let idCourant = null, arrivantCourant = null, docsTaches = [], docsPlanning = [], docsUsers = [],
+    editionId = null, unsubsDetail = [], semDebut = null, slotEditId = null, drag = null,
+    monRole = null, unsubProfil = null, msgApresDeconnexion = null;
 
 /* ---------- Rendus ---------- */
 function renderListe(docs){
@@ -444,13 +477,12 @@ function renderChecklist(){
   }).join("") || `<tr><td colspan="4" class="vide">Aucun prérequis.</td></tr>`;
 }
 
-/* ---------- Planning : vue semaine horaire interactive ---------- */
+/* ---------- Planning semaine ---------- */
 function renderSemaine(){
   if(!semDebut) return;
   const jours = [...Array(7)].map((_,i)=> new Date(semDebut.getFullYear(), semDebut.getMonth(), semDebut.getDate()+i));
   const auj = toISO(new Date());
   $("sem-titre").textContent = "Semaine du " + semDebut.toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
-
   $("sem-entetes").innerHTML = `<div class="sem-coin"></div>` + jours.map(d =>
     `<div class="sem-jour ${toISO(d)===auj?"auj":""}">${d.toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit"})}</div>`).join("");
 
@@ -464,7 +496,6 @@ function renderSemaine(){
     [...Array(FIN_JOURNEE-DEBUT_JOURNEE)].map((_,i)=>
       `<div class="sem-heure" style="height:${HOUR_H}px">${String(DEBUT_JOURNEE+i).padStart(2,"0")}:00</div>`).join("") +
     `</div>`;
-
   jours.forEach(d => {
     const iso = toISO(d);
     const slots = parJour.get(iso)||[];
@@ -489,7 +520,6 @@ function renderSemaine(){
     : "";
 }
 
-/* ---------- Glisser / étirer les blocs ---------- */
 function majPendantDrag(){
   const b = drag.el.querySelector("b");
   if(b) b.textContent = labelHeure(drag.newDeb ?? drag.deb, drag.newFin ?? drag.fin);
@@ -538,7 +568,7 @@ function initDragAndDrop(){
     d.el.classList.remove("drag");
     d.el.style.pointerEvents = "";
     document.body.style.userSelect = "";
-    if(!d.moved){ ouvrirDlgSlot(d.id); return; }          // simple clic = édition
+    if(!d.moved){ ouvrirDlgSlot(d.id); return; }
     const date = d.newDate ?? d.date;
     const deb  = d.newDeb  ?? d.deb;
     const fin  = d.newFin  ?? d.fin;
@@ -547,8 +577,6 @@ function initDragAndDrop(){
       { date, debut: hhmm(deb), fin: hhmm(fin), heure: labelHeure(deb,fin) });
   });
 }
-
-/* ---------- Fenêtre créneau (champs heure natifs) ---------- */
 function ouvrirDlgSlot(id, dateDefaut, debutDefaut){
   slotEditId = id || null;
   if(id){
@@ -595,16 +623,36 @@ function renderModelePlanning(docs){
   }).join("") || `<tr><td colspan="4" class="vide">Aucun créneau type.</td></tr>`;
 }
 
+/* ---------- Rendu utilisateurs ---------- */
+function renderUsers(docs){
+  const moi = auth.currentUser ? auth.currentUser.uid : null;
+  $("corps-users").innerHTML = docs.map(d => { const u = d.data();
+    return `<tr>
+      <td>${esc(u.email||"")} ${d.id===moi?'<span class="badge">(vous)</span>':''}</td>
+      <td>${esc(u.nom||"")}</td>
+      <td>${u.role==="admin"?'<span class="badge badge-fait">Admin</span>':'<span class="badge">Utilisateur</span>'}</td>
+      <td>${u.actif===false?'<span class="badge badge-off">Désactivé</span>':'<span class="badge badge-fait">Actif</span>'}</td>
+      <td class="centre">
+        <button class="btn-secondaire" data-u-role="${d.id}" style="padding:3px 8px;font-size:12px"
+          title="Changer le rôle">${u.role==="admin"?"Rétrograder en utilisateur":"Promouvoir admin"}</button>
+        <button class="btn-secondaire" data-u-actif="${d.id}" style="padding:3px 8px;font-size:12px"
+          title="Désactiver ou réactiver l'accès">${u.actif===false?"✅ Réactiver":"⛔ Désactiver"}</button>
+      </td></tr>`;
+  }).join("") || `<tr><td colspan="5" class="vide">Aucun compte référencé.</td></tr>`;
+}
+
 /* ---------- Navigation ---------- */
+function cacherSections(){
+  $("vue-liste").hidden = true; $("vue-detail").hidden = true;
+  $("vue-modele").hidden = true; $("vue-users").hidden = true;
+}
 function fermerDetail(){ unsubsDetail.forEach(u=>u()); unsubsDetail = []; idCourant = null; semDebut = null; }
 function ouvrirDetail(id){
   fermerDetail(); idCourant = id;
-  $("vue-liste").hidden = true; $("vue-modele").hidden = true; $("vue-detail").hidden = false;
-
+  cacherSections(); $("vue-detail").hidden = false;
   unsubsDetail.push(onSnapshot(doc(db,"arrivants",id),
     s => { if(s.exists()){ arrivantCourant = {id:s.id, ...s.data()}; renderEntete(); } },
     err => console.error("Erreur fiche :", err)));
-
   unsubsDetail.push(onSnapshot(query(collection(db,"arrivants",id,"taches"), orderBy("date")),
     s => {
       docsTaches = s.docs.slice().sort((a,b)=>{
@@ -614,7 +662,6 @@ function ouvrirDetail(id){
       renderChecklist();
     },
     err => console.error("Erreur checklist :", err)));
-
   unsubsDetail.push(onSnapshot(query(collection(db,"arrivants",id,"planning"), orderBy("date")),
     s => {
       docsPlanning = s.docs.slice().sort((a,b)=>{
@@ -626,12 +673,17 @@ function ouvrirDetail(id){
     err => console.error("Erreur planning :", err)));
 }
 function ouvrirModele(){
-  fermerDetail();
-  $("vue-liste").hidden = true; $("vue-detail").hidden = true; $("vue-modele").hidden = false;
+  fermerDetail(); cacherSections(); $("vue-modele").hidden = false;
+}
+function ouvrirUsers(){
+  if(monRole !== "admin"){ alert("Accès réservé aux administrateurs."); return; }
+  fermerDetail(); cacherSections(); $("vue-users").hidden = false;
 }
 function retourListe(){
-  fermerDetail();
-  $("vue-detail").hidden = true; $("vue-modele").hidden = true; $("vue-liste").hidden = false;
+  fermerDetail(); cacherSections(); $("vue-liste").hidden = false;
+}
+function majBtnUsers(){
+  $("btn-users").style.display = (monRole === "admin") ? "" : "none";
 }
 
 /* ---------- Modèle type : init / reset ---------- */
@@ -657,7 +709,7 @@ async function reinitialiserModele(){
   await assurerModele();
 }
 
-/* ---------- Régénérer un arrivant depuis le modèle ---------- */
+/* ---------- Régénérer un arrivant ---------- */
 async function regenererDepuisModele(){
   const a = arrivantCourant; if(!a) return;
   if(!confirm("Remplacer TOUS les prérequis et le planning de cet arrivant par le modèle type actuel,\navec dates recalculées sur la date d'arrivée ?\nLes cochages et modifications actuels seront perdus.")) return;
@@ -690,7 +742,9 @@ function demarrer(){
 
   $("btn-retour").onclick = retourListe;
   $("btn-retour-modele").onclick = retourListe;
+  $("btn-retour-users").onclick = retourListe;
   $("btn-modele").onclick = ouvrirModele;
+  $("btn-users").onclick = ouvrirUsers;
   $("btn-regenere").onclick = regenererDepuisModele;
   $("btn-reset-modele").onclick = async () => {
     if(!confirm("Réinitialiser le modèle type aux valeurs d'origine (celles de votre Excel) ?\nLes personnalisations actuelles du modèle seront perdues.")) return;
@@ -700,7 +754,7 @@ function demarrer(){
   $("btn-annuler").onclick = () => $("dlg-nouveau").close();
   $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
 
-  /* Planning semaine : navigation + création à l'heure cliquée */
+  /* Planning semaine */
   $("sem-prev").onclick = () => { semDebut.setDate(semDebut.getDate()-7); renderSemaine(); };
   $("sem-next").onclick = () => { semDebut.setDate(semDebut.getDate()+7); renderSemaine(); };
   $("sem-aujourd").onclick = () => { semDebut = lundiDe(new Date()); renderSemaine(); };
@@ -710,7 +764,7 @@ function demarrer(){
     ouvrirDlgSlot(null, dansSemaine ? toISO(t) : toISO(semDebut), "09:00");
   };
   $("sem-corps").addEventListener("click", e => {
-    if(e.target.closest(".sem-slot")) return;              // géré par pointerup (clic = édition)
+    if(e.target.closest(".sem-slot")) return;
     const col = e.target.closest(".sem-col");
     if(col){
       const rect = col.getBoundingClientRect();
@@ -853,6 +907,47 @@ function demarrer(){
     e.target.reset(); $("ms-off").value = 0;
   });
 
+  /* ----- Gestion des utilisateurs (admin) ----- */
+  $("form-user").addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = $("us-email").value.trim().toLowerCase();
+    const mdp   = $("us-mdp").value;
+    const role  = $("us-role").value;
+    const nom   = $("us-nom").value.trim();
+    const msg   = $("user-msg");
+    msg.className = "message";
+    try {
+      const cred = await createUserWithEmailAndPassword(authSecondaire, email, mdp);
+      await signOut(authSecondaire);                      // on ne reste pas connecté sur le compte créé
+      await setDoc(doc(db,"utilisateurs",cred.user.uid),
+        { uid: cred.user.uid, email, nom, role, actif:true, creeLe: serverTimestamp() });
+      msg.className = "message ok";
+      msg.textContent = `✅ Compte créé pour ${email}. Communiquez-lui son mot de passe temporaire (il pourra le changer via « Mot de passe oublié »).`;
+      e.target.reset();
+    } catch(err){
+      msg.className = "message erreur";
+      msg.textContent = traduireErreur(err.code, err.message);
+    }
+  });
+  $("corps-users").addEventListener("click", async e => {
+    const b = e.target.closest("button"); if(!b) return;
+    const moi = auth.currentUser ? auth.currentUser.uid : null;
+    if(b.dataset.uRole){
+      const id = b.dataset.uRole;
+      const u = docsUsers.find(d=>d.id===id)?.data(); if(!u) return;
+      const nouveau = u.role === "admin" ? "user" : "admin";
+      if(id === moi && nouveau === "user" &&
+         !confirm("Vous allez perdre vos droits admin (donc l'accès à cette page). Continuer ?")) return;
+      await updateDoc(doc(db,"utilisateurs",id), { role: nouveau });
+    }
+    if(b.dataset.uActif){
+      const id = b.dataset.uActif;
+      const u = docsUsers.find(d=>d.id===id)?.data(); if(!u) return;
+      if(id === moi){ alert("Vous ne pouvez pas désactiver votre propre compte."); return; }
+      await updateDoc(doc(db,"utilisateurs",id), { actif: u.actif === false });
+    }
+  });
+
   $("btn-suppr-arrivant").onclick = async () => {
     if(!confirm("Supprimer définitivement cet arrivant et tout son suivi ?")) return;
     const snaps = await Promise.all([ getDocs(collection(db,"arrivants",idCourant,"taches")),
@@ -871,21 +966,50 @@ function demarrer(){
     s => renderModeleTaches(s.docs), err => console.error("Erreur modèle tâches :", err));
   onSnapshot(query(COL_MODELE_PLANNING(), orderBy("ordre")),
     s => renderModelePlanning(s.docs), err => console.error("Erreur modèle planning :", err));
+  onSnapshot(query(collection(db,"utilisateurs"), orderBy("email")),
+    s => { docsUsers = s.docs; renderUsers(s.docs); }, err => console.error("Erreur utilisateurs :", err));
 }
 
-/* ---------- Surveillance de la connexion ---------- */
-onAuthStateChanged(auth, user => {
+/* ---------- Connexion + profil utilisateur ---------- */
+onAuthStateChanged(auth, async user => {
   if(user){
+    /* 1) Profil Firestore : créé à la première connexion (le 1er compte devient admin) */
+    try {
+      const ref = doc(db,"utilisateurs",user.uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        const cnt = await getCountFromServer(query(collection(db,"utilisateurs")));
+        const role = (cnt.data().count === 0) ? "admin" : "user";
+        await setDoc(ref, { uid:user.uid, email:user.email||"", nom:"", role, actif:true, creeLe:serverTimestamp() });
+      }
+    } catch(err){ console.error("Profil utilisateur :", err); }
+
+    /* 2) Surveillance de mon profil (rôle + désactivation) */
+    if(unsubProfil) unsubProfil();
+    unsubProfil = onSnapshot(doc(db,"utilisateurs",user.uid), s => {
+      const p = s.data();
+      if(p && p.actif === false){
+        msgApresDeconnexion = "Compte désactivé. Contactez votre administrateur.";
+        signOut(auth);
+        return;
+      }
+      monRole = p ? p.role : "user";
+      majBtnUsers();
+    });
+
     $("vue-auth").style.display = "none";
     $("app").hidden = false;
     $("user-email").textContent = user.email;
     demarrer();
   } else {
+    if(unsubProfil){ unsubProfil(); unsubProfil = null; }
+    monRole = null; majBtnUsers();
     $("app").hidden = true;
     $("vue-auth").style.display = "flex";
-    effacerMessageAuth();
+    if(msgApresDeconnexion){ afficherMessageAuth(msgApresDeconnexion, "erreur"); msgApresDeconnexion = null; }
+    else effacerMessageAuth();
     fermerDetail();
-    $("vue-detail").hidden = true; $("vue-modele").hidden = true; $("vue-liste").hidden = false;
+    cacherSections(); $("vue-liste").hidden = false;
     appDemarree = false;
   }
 });
