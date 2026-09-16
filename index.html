@@ -39,7 +39,7 @@
   .btn-icone{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px}
   .ligne-form{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
   .ligne-form input[type=text]{flex:1;min-width:200px;border:1px solid var(--bord);border-radius:8px;padding:8px 10px;font:inherit}
-  .ligne-form input[type=date],.ligne-form input[type=number]{border:1px solid var(--bord);border-radius:8px;padding:7px;font:inherit}
+  .ligne-form input[type=date],.ligne-form input[type=number],.ligne-form input[type=time]{border:1px solid var(--bord);border-radius:8px;padding:7px;font:inherit}
   .entete-detail{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px}
   .entete-detail h2{margin:0 0 6px}
   .droite{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -52,8 +52,10 @@
   .coche{display:flex!important;align-items:center;gap:8px;font-weight:500!important}
   .coche input{width:auto;margin:0}
   .dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+  .dlg-heures{display:flex;gap:10px}
+  .dlg-heures label{flex:1}
 
-  /* ===== PLANNING SEMAINE (grille horaire) ===== */
+  /* ===== PLANNING SEMAINE (grille horaire interactive) ===== */
   .sem-outils{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
   #sem-titre{font-weight:700;min-width:230px;text-align:center;font-size:15px;text-transform:capitalize}
   .sem-conteneur{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px;overflow-x:auto}
@@ -63,13 +65,20 @@
   .sem-gutter{border-right:1px solid var(--bord)}
   .sem-heure{font-size:11px;color:#778;text-align:right;padding:2px 6px 0 0;border-top:1px solid #eef1f5}
   .sem-col{position:relative;border-right:1px solid #eef1f5;cursor:cell;
-    background:repeating-linear-gradient(to bottom, transparent 0 43px, #eef1f5 43px 44px)}
+    background:repeating-linear-gradient(to bottom,
+      transparent 0 21px, #f0f3f7 21px 22px,
+      transparent 22px 43px, #e2e8f0 43px 44px)}
   .sem-col.auj{background-color:#f4f9ff}
   .sem-slot{position:absolute;left:3px;right:3px;background:var(--bleu-clair);border-left:3px solid var(--bleu);
-    border-radius:4px;padding:2px 6px;font-size:11px;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.10)}
+    border-radius:4px;padding:2px 6px 10px;font-size:11px;overflow:hidden;cursor:grab;
+    box-shadow:0 1px 2px rgba(0,0,0,.10);touch-action:none;user-select:none}
   .sem-slot:hover{background:#cfe3f7}
-  .sem-slot b{color:#1565c0;display:block;font-size:10px}
-  #sem-sans-date .cal-slot{display:inline-flex;margin:2px}
+  .sem-slot.drag{opacity:.9;box-shadow:0 8px 20px rgba(0,0,0,.28);z-index:6;cursor:grabbing}
+  .sem-slot b{color:#1565c0;display:block;font-size:10px;pointer-events:none}
+  .sem-slot .txt{pointer-events:none}
+  .sem-grip{position:absolute;left:0;right:0;bottom:0;height:9px;cursor:ns-resize;
+    background:linear-gradient(to bottom, transparent 30%, rgba(25,118,210,.45) 30%)}
+  .sem-grip:hover{background:linear-gradient(to bottom, transparent 10%, rgba(25,118,210,.7) 10%)}
   .cal-slot{background:var(--bleu-clair);border-radius:6px;padding:2px 6px;font-size:11px;cursor:pointer;display:inline-flex;gap:5px;align-items:baseline}
   .cal-slot:hover{background:#cfe3f7}
   .cal-h{font-weight:700;color:#1565c0;white-space:nowrap}
@@ -177,8 +186,9 @@
         <div class="sem-corps" id="sem-corps"></div>
         <p id="sem-sans-date" class="vide" style="padding:6px 4px"></p>
       </div>
-      <p class="aide" style="margin-top:8px">💡 Cliquez dans une colonne <b>à la hauteur de l'heure voulue</b> pour créer un créneau à cette heure ;
-      cliquez sur un créneau pour le modifier ou le supprimer. Les créneaux sont dimensionnés selon leur durée.</p>
+      <p class="aide" style="margin-top:8px">💡 <b>Clic dans une case vide</b> = créer un créneau à cette heure (pas de 30 min) ·
+      <b>Clic sur un bloc</b> = modifier / supprimer · <b>Glisser un bloc</b> = le déplacer (heure ou jour) ·
+      <b>Tirer la poignée striée en bas d'un bloc</b> = étirer / réduire sa durée.</p>
     </section>
 
     <!-- ===== VUE MODÈLE TYPE ===== -->
@@ -236,7 +246,10 @@
   <form id="form-slot-edit">
     <h3 id="dlg-slot-titre">Créneau</h3>
     <label>Date<input type="date" id="sl-date" required></label>
-    <label>Horaire<input type="text" id="sl-heure" placeholder="ex : 09:00–11:00 ou 13:00"></label>
+    <div class="dlg-heures">
+      <label>Début<input type="time" id="sl-debut" required step="900"></label>
+      <label>Fin<input type="time" id="sl-fin" required step="900"></label>
+    </div>
     <label>Activité<input type="text" id="sl-act" required></label>
     <div class="dlg-actions">
       <button type="button" class="btn btn-gris" id="sl-annuler">Annuler</button>
@@ -269,6 +282,7 @@ const firebaseConfig = {
 const DEBUT_JOURNEE = 7;    // première heure affichée
 const FIN_JOURNEE   = 19;   // dernière heure affichée (exclue)
 const HOUR_H        = 44;   // hauteur d'une heure en pixels
+const SNAP          = 0.5;  // pas de placement / étirement (en heures : 0.5 = 30 min)
 
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
@@ -317,7 +331,9 @@ const addDays = (iso, off) => { const d = parseISO(iso); d.setDate(d.getDate()+o
 const fmtLong = iso => iso ? parseISO(iso).toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
 const lundiDe = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; };
 
-/* Extrait début/fin (en heures décimales) d'un horaire : "08:00–09:00", "13:00", "9h00-11h00"… */
+/* Heures : conversions */
+const hmToDec = hm => { const p = (hm||"").split(":"); return (+p[0]||0) + ((+p[1]||0)/60); };
+const hhmm = dec => String(Math.floor(dec)).padStart(2,"0") + ":" + String(Math.round((dec%1)*60)).padStart(2,"0");
 function parseHeure(str){
   const m = (str||"").match(/(\d{1,2})[:hH](\d{2})?/g) || [];
   const vals = m.map(x=>{ const p = x.match(/(\d{1,2})[:hH](\d{2})?/); return (+p[1]) + (p[2] ? (+p[2])/60 : 0); });
@@ -328,6 +344,15 @@ function parseHeure(str){
   fin = Math.min(Math.max(fin, deb + 0.5), FIN_JOURNEE);
   return { deb, fin };
 }
+/* début/fin d'un créneau : champs debut/fin si présents, sinon horaire libre legacy */
+function normSlot(s){
+  if(s && s.debut){
+    const d = hmToDec(s.debut), f = s.fin ? hmToDec(s.fin) : d + 1;
+    return { deb: d, fin: (f > d ? f : d + 1) };
+  }
+  return parseHeure(s ? s.heure : "");
+}
+const labelHeure = (deb, fin) => hhmm(deb) + "–" + hhmm(fin);
 
 /* ---------- Messages d'erreur Firebase en français ---------- */
 const ERREURS_FR = {
@@ -370,7 +395,7 @@ const gestionDeconnexion = () => signOut(auth);
 
 /* ---------- État applicatif ---------- */
 let idCourant = null, arrivantCourant = null, docsTaches = [], docsPlanning = [],
-    editionId = null, unsubsDetail = [], semDebut = null, slotEditId = null;
+    editionId = null, unsubsDetail = [], semDebut = null, slotEditId = null, drag = null;
 
 /* ---------- Rendus ---------- */
 function renderListe(docs){
@@ -419,7 +444,7 @@ function renderChecklist(){
   }).join("") || `<tr><td colspan="4" class="vide">Aucun prérequis.</td></tr>`;
 }
 
-/* ---------- Planning : vue semaine horaire ---------- */
+/* ---------- Planning : vue semaine horaire interactive ---------- */
 function renderSemaine(){
   if(!semDebut) return;
   const jours = [...Array(7)].map((_,i)=> new Date(semDebut.getFullYear(), semDebut.getMonth(), semDebut.getDate()+i));
@@ -432,7 +457,7 @@ function renderSemaine(){
   const parJour = new Map();
   docsPlanning.forEach(d => { const s = {id:d.id, ...d.data()}, k = s.date || "sans";
     if(!parJour.has(k)) parJour.set(k, []); parJour.get(k).push(s); });
-  parJour.forEach(l => l.sort((a,b)=>(a.heure||"").localeCompare(b.heure||"")));
+  parJour.forEach(l => l.sort((a,b)=> normSlot(a).deb - normSlot(b).deb));
 
   const H = (FIN_JOURNEE - DEBUT_JOURNEE) * HOUR_H;
   let html = `<div class="sem-gutter" style="height:${H}px">` +
@@ -445,32 +470,103 @@ function renderSemaine(){
     const slots = parJour.get(iso)||[];
     html += `<div class="sem-col ${iso===auj?"auj":""}" data-jour="${iso}" style="height:${H}px">` +
       slots.map(s => {
-        const {deb, fin} = parseHeure(s.heure);
+        const {deb, fin} = normSlot(s);
         const top = (deb - DEBUT_JOURNEE) * HOUR_H;
         const h   = Math.max(22, (fin - deb) * HOUR_H - 2);
         return `<div class="sem-slot" data-cal-edit="${s.id}" style="top:${top}px;height:${h}px"
-          title="${esc(s.heure||"")} – ${esc(s.activite)}"><b>${esc(s.heure||"")}</b>${esc(s.activite)}</div>`;
+          title="${esc(labelHeure(deb,fin))} – ${esc(s.activite)}">
+          <b>${esc(labelHeure(deb,fin))}</b><span class="txt">${esc(s.activite)}</span>
+          <div class="sem-grip" title="Étirer / réduire"></div></div>`;
       }).join("") + `</div>`;
   });
   $("sem-corps").innerHTML = html;
 
   const sans = parJour.get("sans")||[];
   $("sem-sans-date").innerHTML = sans.length
-    ? "Créneaux sans date : " + sans.map(s=>`<span class="cal-slot" data-cal-edit="${s.id}">
-        <span class="cal-h">${esc(s.heure||"")}</span> ${esc(s.activite)}</span>`).join("")
+    ? "Créneaux sans date : " + sans.map(s=>{ const {deb,fin} = normSlot(s);
+        return `<span class="cal-slot" data-cal-edit="${s.id}">
+          <span class="cal-h">${esc(labelHeure(deb,fin))}</span> ${esc(s.activite)}</span>`; }).join("")
     : "";
 }
 
-function ouvrirDlgSlot(id, dateDefaut, heureDefaut){
+/* ---------- Glisser / étirer les blocs ---------- */
+function majPendantDrag(){
+  const b = drag.el.querySelector("b");
+  if(b) b.textContent = labelHeure(drag.newDeb ?? drag.deb, drag.newFin ?? drag.fin);
+}
+function initDragAndDrop(){
+  $("sem-corps").addEventListener("pointerdown", e => {
+    const slot = e.target.closest(".sem-slot"); if(!slot) return;
+    const id = slot.dataset.calEdit;
+    const s = docsPlanning.find(d=>d.id===id)?.data(); if(!s) return;
+    const {deb, fin} = normSlot(s);
+    drag = { id, el: slot, mode: e.target.closest(".sem-grip") ? "resize" : "move",
+             x0:e.clientX, y0:e.clientY, deb, fin, date:s.date || "",
+             moved:false, newDate:null, newDeb:null, newFin:null };
+    e.preventDefault();
+  });
+  window.addEventListener("pointermove", e => {
+    if(!drag) return;
+    const dy = e.clientY - drag.y0, dx = e.clientX - drag.x0;
+    if(!drag.moved && Math.abs(dy) < 5 && Math.abs(dx) < 5) return;
+    if(!drag.moved){
+      drag.moved = true;
+      drag.el.classList.add("drag");
+      drag.el.style.pointerEvents = "none";
+      document.body.style.userSelect = "none";
+    }
+    const delta = Math.round(dy / HOUR_H / SNAP) * SNAP;
+    if(drag.mode === "move"){
+      const dur = drag.fin - drag.deb;
+      const deb = Math.min(Math.max(drag.deb + delta, DEBUT_JOURNEE), FIN_JOURNEE - dur);
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      const col = under && under.closest ? under.closest(".sem-col") : null;
+      drag.newDate = col ? col.dataset.jour : drag.date;
+      drag.newDeb = deb; drag.newFin = deb + dur;
+      drag.el.style.top = ((deb - DEBUT_JOURNEE) * HOUR_H) + "px";
+      if(col && col !== drag.el.parentElement) col.appendChild(drag.el);
+    } else {
+      const fin = Math.min(Math.max(drag.fin + delta, drag.deb + SNAP), FIN_JOURNEE);
+      drag.newDeb = drag.deb; drag.newFin = fin;
+      drag.el.style.height = Math.max(20, (fin - drag.deb) * HOUR_H - 2) + "px";
+    }
+    majPendantDrag();
+  });
+  window.addEventListener("pointerup", async () => {
+    if(!drag) return;
+    const d = drag; drag = null;
+    d.el.classList.remove("drag");
+    d.el.style.pointerEvents = "";
+    document.body.style.userSelect = "";
+    if(!d.moved){ ouvrirDlgSlot(d.id); return; }          // simple clic = édition
+    const date = d.newDate ?? d.date;
+    const deb  = d.newDeb  ?? d.deb;
+    const fin  = d.newFin  ?? d.fin;
+    if(!date) return;
+    await updateDoc(doc(db,"arrivants",idCourant,"planning",d.id),
+      { date, debut: hhmm(deb), fin: hhmm(fin), heure: labelHeure(deb,fin) });
+  });
+}
+
+/* ---------- Fenêtre créneau (champs heure natifs) ---------- */
+function ouvrirDlgSlot(id, dateDefaut, debutDefaut){
   slotEditId = id || null;
   if(id){
     const s = docsPlanning.find(d=>d.id===id)?.data(); if(!s) return;
+    const {deb, fin} = normSlot(s);
     $("dlg-slot-titre").textContent = "Modifier le créneau";
-    $("sl-date").value = s.date||""; $("sl-heure").value = s.heure||""; $("sl-act").value = s.activite||"";
+    $("sl-date").value = s.date||"";
+    $("sl-debut").value = hhmm(deb);
+    $("sl-fin").value = hhmm(fin);
+    $("sl-act").value = s.activite||"";
     $("sl-suppr").style.display = "";
   } else {
+    const deb = hmToDec(debutDefaut || "09:00");
     $("dlg-slot-titre").textContent = "Nouveau créneau";
-    $("sl-date").value = dateDefaut||""; $("sl-heure").value = heureDefaut||""; $("sl-act").value = "";
+    $("sl-date").value = dateDefaut||"";
+    $("sl-debut").value = hhmm(deb);
+    $("sl-fin").value = hhmm(Math.min(deb + 1, FIN_JOURNEE));
+    $("sl-act").value = "";
     $("sl-suppr").style.display = "none";
   }
   $("dlg-slot").showModal();
@@ -523,7 +619,7 @@ function ouvrirDetail(id){
     s => {
       docsPlanning = s.docs.slice().sort((a,b)=>{
         const ta=a.data(), tb=b.data();
-        return (ta.date||"").localeCompare(tb.date||"") || (ta.heure||"").localeCompare(tb.heure||"");
+        return (ta.date||"").localeCompare(tb.date||"") || normSlot(ta).deb - normSlot(tb).deb;
       });
       renderSemaine();
     },
@@ -579,8 +675,10 @@ async function regenererDepuisModele(){
     batch.set(doc(collection(db,"arrivants",idCourant,"taches")),
       { description:t.description, date:addDays(a.dateArrivee, t.off||0), fait:false, ordre:i }); });
   mp.docs.forEach((d,i)=>{ const s = d.data();
+    const {deb, fin} = parseHeure(s.heure);
     batch.set(doc(collection(db,"arrivants",idCourant,"planning")),
-      { date:addDays(a.dateArrivee, s.off||0), heure:s.heure||"", activite:s.activite||"", ordre:i }); });
+      { date:addDays(a.dateArrivee, s.off||0), debut:hhmm(deb), fin:hhmm(fin),
+        heure:labelHeure(deb,fin), activite:s.activite||"", ordre:i }); });
   batch.update(doc(db,"arrivants",idCourant), { nbTaches: mt.docs.length, nbFaites: 0 });
   await batch.commit();
 }
@@ -602,7 +700,7 @@ function demarrer(){
   $("btn-annuler").onclick = () => $("dlg-nouveau").close();
   $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
 
-  /* Planning semaine : navigation + création à l'heure cliquée + édition */
+  /* Planning semaine : navigation + création à l'heure cliquée */
   $("sem-prev").onclick = () => { semDebut.setDate(semDebut.getDate()-7); renderSemaine(); };
   $("sem-next").onclick = () => { semDebut.setDate(semDebut.getDate()+7); renderSemaine(); };
   $("sem-aujourd").onclick = () => { semDebut = lundiDe(new Date()); renderSemaine(); };
@@ -612,16 +710,16 @@ function demarrer(){
     ouvrirDlgSlot(null, dansSemaine ? toISO(t) : toISO(semDebut), "09:00");
   };
   $("sem-corps").addEventListener("click", e => {
-    const slot = e.target.closest("[data-cal-edit]");
-    if(slot){ ouvrirDlgSlot(slot.dataset.calEdit); return; }
+    if(e.target.closest(".sem-slot")) return;              // géré par pointerup (clic = édition)
     const col = e.target.closest(".sem-col");
     if(col){
       const rect = col.getBoundingClientRect();
-      let h = DEBUT_JOURNEE + Math.floor((e.clientY - rect.top) / HOUR_H);
-      h = Math.min(Math.max(h, DEBUT_JOURNEE), FIN_JOURNEE-1);
-      ouvrirDlgSlot(null, col.dataset.jour, String(h).padStart(2,"0")+":00");
+      let h = DEBUT_JOURNEE + Math.floor((e.clientY - rect.top) / HOUR_H / SNAP) * SNAP;
+      h = Math.min(Math.max(h, DEBUT_JOURNEE), FIN_JOURNEE - 1);
+      ouvrirDlgSlot(null, col.dataset.jour, hhmm(h));
     }
   });
+  initDragAndDrop();
   $("sem-sans-date").addEventListener("click", e => {
     const ed = e.target.closest("[data-cal-edit]"); if(ed) ouvrirDlgSlot(ed.dataset.calEdit);
   });
@@ -634,10 +732,15 @@ function demarrer(){
   };
   $("form-slot-edit").addEventListener("submit", async e => {
     e.preventDefault();
-    const date = $("sl-date").value, heure = $("sl-heure").value.trim(), activite = $("sl-act").value.trim();
+    const date = $("sl-date").value;
+    let deb = hmToDec($("sl-debut").value), fin = hmToDec($("sl-fin").value);
+    const activite = $("sl-act").value.trim();
     if(!date || !activite) return;
-    if(slotEditId) await updateDoc(doc(db,"arrivants",idCourant,"planning",slotEditId), { date, heure, activite });
-    else await addDoc(collection(db,"arrivants",idCourant,"planning"), { date, heure, activite, ordre: Date.now() });
+    if(fin <= deb) fin = deb + 1;
+    if(slotEditId) await updateDoc(doc(db,"arrivants",idCourant,"planning",slotEditId),
+      { date, debut: hhmm(deb), fin: hhmm(fin), heure: labelHeure(deb,fin), activite });
+    else await addDoc(collection(db,"arrivants",idCourant,"planning"),
+      { date, debut: hhmm(deb), fin: hhmm(fin), heure: labelHeure(deb,fin), activite, ordre: Date.now() });
     $("dlg-slot").close();
   });
 
@@ -663,8 +766,10 @@ function demarrer(){
         batch.set(doc(collection(db,"arrivants",ref.id,"taches")),
           { description:t.description, date:addDays(dateArrivee, t.off||0), fait:false, ordre:i }); });
       mpDocs.forEach((d,i)=>{ const s = d.data();
+        const {deb, fin} = parseHeure(s.heure);
         batch.set(doc(collection(db,"arrivants",ref.id,"planning")),
-          { date:addDays(dateArrivee, s.off||0), heure:s.heure||"", activite:s.activite||"", ordre:i }); });
+          { date:addDays(dateArrivee, s.off||0), debut:hhmm(deb), fin:hhmm(fin),
+            heure:labelHeure(deb,fin), activite:s.activite||"", ordre:i }); });
       await batch.commit();
     }
     $("dlg-nouveau").close(); ouvrirDetail(ref.id);
