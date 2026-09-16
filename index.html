@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Onboarding – Accueil des nouveaux arrivants</title>
+<!-- ============================================================
+     OUTIL ONBOARDING – Firebase Firestore
+     1) Collez votre firebaseConfig ci-dessous (section CONFIG)
+     2) Ouvrez ce fichier dans un navigateur (ou déployez sur Hosting)
+============================================================= -->
+<style>
+  :root{--bleu:#1976d2;--bleu-f:#4a90d9;--bleu-clair:#ddebf7;--vert:#2e7d32;--rouge:#c62828;--gris:#f4f6f8;--bord:#d0d7de}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--gris);color:#222}
+  header{background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  header h1{margin:0;font-size:20px}
+  main{max-width:1100px;margin:22px auto;padding:0 16px}
+  h2{font-size:18px;margin:18px 0 10px} h3{margin:26px 0 8px;color:#1565c0}
+  .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .carte{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:8px}
+  .carte-tete{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px}
+  .carte-pied{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#556}
+  .badge{background:var(--bleu-clair);color:#1565c0;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+  .badge-fait{background:#e8f5e9;color:var(--vert)}
+  .jauge{background:#e3e8ee;border-radius:8px;height:10px;overflow:hidden;flex:1;min-width:120px}
+  .jauge div{background:linear-gradient(90deg,#43a047,#66bb6a);height:100%;width:0;transition:width .3s}
+  .tableau{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--bord)}
+  .tableau th{background:var(--bleu-f);color:#fff;text-align:left;padding:8px 10px;font-size:13px}
+  .tableau td{padding:7px 10px;border-top:1px solid #e6ebf1;font-size:14px;vertical-align:middle}
+  .tableau tbody tr:nth-child(even){background:var(--bleu-clair)}
+  .tableau tr.fait td.desc{text-decoration:line-through;color:#777}
+  .tableau input[type=date]{border:1px solid var(--bord);border-radius:6px;padding:4px 6px;font:inherit;background:#fff}
+  .tableau input[type=text]{width:100%;border:1px solid var(--bord);border-radius:6px;padding:5px 7px;font:inherit}
+  .centre{text-align:center}
+  .btn{background:var(--bleu);color:#fff;border:none;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+  .btn:hover{background:#1565c0}
+  .btn-clair{background:#ffffff22;border:1px solid #ffffff66}
+  .btn-danger{background:#fff;color:var(--rouge);border:1px solid var(--rouge);padding:6px 10px;border-radius:8px;cursor:pointer;font:inherit}
+  .btn-gris{background:#e0e0e0;color:#333}
+  .btn-icone{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px}
+  .ligne-form{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+  .ligne-form input[type=text]{flex:1;min-width:200px;border:1px solid var(--bord);border-radius:8px;padding:8px 10px;font:inherit}
+  .ligne-form input[type=date]{border:1px solid var(--bord);border-radius:8px;padding:7px;font:inherit}
+  .entete-detail{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .entete-detail h2{margin:0 0 6px}
+  .droite{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .jour{background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px 14px;margin-bottom:10px}
+  .jour h4{margin:0 0 8px;color:#1565c0}
+  .jour ul{list-style:none;margin:0;padding:0}
+  .jour li{display:flex;align-items:center;gap:10px;padding:6px 4px;border-top:1px dashed #e0e6ed}
+  .jour li .heure{background:var(--bleu-clair);color:#1565c0;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;min-width:110px;text-align:center}
+  .jour li .act{flex:1}
+  .vide{color:#667;font-style:italic}
+  .warning{background:#fff3cd;border:1px solid #ffc107;padding:10px 16px;text-align:center;font-weight:600}
+  dialog{border:none;border-radius:12px;padding:20px;width:min(420px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+  dialog::backdrop{background:rgba(0,0,0,.4)}
+  dialog label{display:block;margin-bottom:12px;font-size:14px;font-weight:600}
+  dialog input{display:block;width:100%;margin-top:4px;border:1px solid var(--bord);border-radius:8px;padding:8px;font:inherit;font-weight:400}
+  .coche{display:flex!important;align-items:center;gap:8px;font-weight:500!important}
+  .coche input{width:auto;margin:0}
+  .dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛬 Onboarding – Accueil des nouveaux arrivants</h1>
+  <button class="btn btn-clair" id="btn-nouveau">＋ Nouvel arrivant</button>
+</header>
+<div id="cfg-warning" class="warning" hidden>⚠️ Ouvrez ce fichier et collez votre configuration Firebase (bloc <code>firebaseConfig</code>) avant utilisation.</div>
+
+<main>
+  <!-- ================= VUE LISTE ================= -->
+  <section id="vue-liste">
+    <h2>Arrivants suivis</h2>
+    <div id="liste-arrivants" class="grille"></div>
+    <p id="liste-vide" class="vide" hidden>Aucun arrivant pour le moment. Cliquez sur « ＋ Nouvel arrivant ».</p>
+  </section>
+
+  <!-- ================= VUE DÉTAIL ================= -->
+  <section id="vue-detail" hidden>
+    <button class="btn" id="btn-retour">← Retour à la liste</button>
+    <div class="entete-detail">
+      <div>
+        <h2 id="detail-titre"></h2>
+        <span class="badge" id="detail-matricule"></span>
+      </div>
+      <div class="droite">
+        <div class="jauge"><div id="jauge-plein"></div></div>
+        <span id="jauge-texte"></span>
+        <button class="btn-danger" id="btn-suppr-arrivant">🗑 Supprimer</button>
+      </div>
+    </div>
+
+    <h3>📋 Checklist d'arrivée</h3>
+    <table class="tableau">
+      <thead><tr><th style="width:55%">Descriptions</th><th style="width:18%">Dates</th><th style="width:12%">Fait Oui/Non</th><th style="width:15%">Actions</th></tr></thead>
+      <tbody id="corps-checklist"></tbody>
+    </table>
+    <form id="form-tache" class="ligne-form">
+      <input type="text" id="tache-desc" placeholder="Nouvelle tâche…" required />
+      <input type="date" id="tache-date" />
+      <button class="btn" type="submit">Ajouter</button>
+    </form>
+
+    <h3>📅 Planning des premiers jours</h3>
+    <div id="planning"></div>
+    <form id="form-slot" class="ligne-form">
+      <input type="date" id="slot-date" required />
+      <input type="text" id="slot-heure" placeholder="Horaire (ex : 09:00–11:00)" style="max-width:190px" />
+      <input type="text" id="slot-activite" placeholder="Activité…" required />
+      <button class="btn" type="submit">Ajouter</button>
+    </form>
+  </section>
+</main>
+
+<dialog id="dlg-nouveau">
+  <form id="form-nouveau">
+    <h3>Nouvel arrivant</h3>
+    <label>Nom complet<input id="nv-nom" required placeholder="Ex : GUEYE NIANA"></label>
+    <label>Matricule<input id="nv-matricule" placeholder="Ex : 0206152D"></label>
+    <label>Date d'arrivée<input id="nv-date" type="date" required></label>
+    <label class="coche"><input type="checkbox" id="nv-modele" checked> Charger le modèle standard (checklist + planning issus de votre Excel)</label>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-gris" id="btn-annuler">Annuler</button>
+      <button type="submit" class="btn">Créer</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs,
+         onSnapshot, query, orderBy, writeBatch, serverTimestamp, increment }
+         from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ==================== CONFIG FIREBASE (À COLLER ICI) ==================== */
+const firebaseConfig = {
+  apiKey: "COLLEZ_VOTRE_apiKey",
+  authDomain: "VOTRE_PROJET.firebaseapp.com",
+  projectId: "VOTRE_PROJET",
+  storageBucket: "VOTRE_PROJET.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "COLLEZ_VOTRE_appId"
+};
+/* ======================================================================== */
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+/* ---------- Modèle standard (repris de votre Excel) ---------- */
+/* off = décalage en jours par rapport à la date d'arrivée (J0)   */
+const MODELE_TACHES = [
+  { off:-5, desc:"Commander le PC portable" },
+  { off:-5, desc:"Récupérer le calendrier d'alternance (Seb Dubresson)" },
+  { off:-5, desc:"Créer compte Reflex (profil Gstock)" },
+  { off:-3, desc:"Basculer l'écran de Lucas vers l'alternant si possible" },
+  { off:-3, desc:"Badge accès magasin + badge pour badger (jour d'arrivée donné par RH)" },
+  { off: 0, desc:"Accueil Mika / Ami" },
+  { off: 0, desc:"Récupérer les EPIs (gilet, chaussures, casquette…)" },
+  { off: 0, desc:"Visite du site en général + visite LI" },
+  { off: 0, desc:"Diffusion des documents et mise à jour avec Gequi" },
+  { off: 0, desc:"Voir si besoin de facilité de circulation en attendant" },
+  { off: 1, desc:"Accueil sécurité (9h00–11h00)" },
+  { off: 2, desc:"Planning « vie ma vie » avec les équipes (réception, expédition, prélèvement, rangement, kitting, ordo, stock, appros)" },
+  { off: 2, desc:"Formation base : comment vient le besoin … et Reflex" },
+];
+const MODELE_PLANNING = [
+  { off:0, heure:"08:00–09:00", activite:"Accueil & récupération des EPI" },
+  { off:0, heure:"10:00–12:00", activite:"Visite du site en général + visite LI" },
+  { off:0, heure:"13:00",       activite:"Diffusion documentaire" },
+  { off:1, heure:"09:00–11:00", activite:"Accueil sécurité" },
+  { off:1, heure:"13:00",       activite:"Vie ma vie – Réception" },
+  { off:1, heure:"14:00",       activite:"Vie ma vie – Rangement" },
+  { off:1, heure:"15:00",       activite:"Vie ma vie – Kitting" },
+  { off:1, heure:"16:00",       activite:"Vie ma vie – Ordo" },
+  { off:1, heure:"16:30",       activite:"Vie ma vie – Appro" },
+  { off:1, heure:"17:00",       activite:"Vie ma vie – Gstock" },
+];
+
+/* ---------- Petits utilitaires ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const parseISO = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+const toISO = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const addDays = (iso, off) => { const d = parseISO(iso); d.setDate(d.getDate()+off); return toISO(d); };
+const fmtLong = iso => iso ? parseISO(iso).toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
+
+/* ---------- État ---------- */
+let idCourant = null, arrivantCourant = null, docsTaches = [], editionId = null, unsubs = [];
+
+/* ---------- Rendus ---------- */
+function renderListe(docs){
+  $("liste-vide").hidden = docs.length > 0;
+  $("liste-arrivants").innerHTML = docs.map(d => {
+    const a = d.data(), total = a.nbTaches||0, faites = a.nbFaites||0;
+    const pct = total ? Math.round(faites/total*100) : 0;
+    return `<div class="carte">
+      <div class="carte-tete"><strong>${esc(a.nom)}</strong><span class="badge">${esc(a.matricule||"")}</span></div>
+      <div>Arrivée : <b>${fmtLong(a.dateArrivee)}</b></div>
+      <div class="jauge"><div style="width:${pct}%"></div></div>
+      <div class="carte-pied"><span>${faites}/${total} tâches faites (${pct} %)</span>
+      <button class="btn" data-ouvrir="${d.id}">Ouvrir →</button></div></div>`;
+  }).join("");
+}
+
+function renderEntete(){
+  const a = arrivantCourant; if(!a) return;
+  $("detail-titre").textContent = `Arrivée de ${a.nom} le ${fmtLong(a.dateArrivee)}`;
+  $("detail-matricule").textContent = a.matricule || "—";
+  const total = a.nbTaches||0, faites = a.nbFaites||0, pct = total ? Math.round(faites/total*100) : 0;
+  $("jauge-plein").style.width = pct+"%";
+  $("jauge-texte").textContent = `${faites}/${total} tâches faites (${pct} %)`;
+}
+
+function renderChecklist(){
+  $("corps-checklist").innerHTML = docsTaches.map(d => {
+    const t = d.data();
+    if (d.id === editionId) return `<tr>
+      <td><input type="text" id="edit-desc" value="${esc(t.description)}"></td>
+      <td><input type="date" id="edit-date" value="${t.date||""}"></td>
+      <td class="centre">—</td>
+      <td class="centre">
+        <button class="btn-icone" data-action="save" data-id="${d.id}" title="Enregistrer">💾</button>
+        <button class="btn-icone" data-action="cancel" title="Annuler">✖</button></td></tr>`;
+    return `<tr class="${t.fait?"fait":""}">
+      <td class="desc">${esc(t.description)}</td>
+      <td><input type="date" data-action="date" data-id="${d.id}" value="${t.date||""}"></td>
+      <td class="centre"><input type="checkbox" data-action="fait" data-id="${d.id}" ${t.fait?"checked":""}>
+        ${t.fait?'<span class="badge badge-fait">Fait</span>':""}</td>
+      <td class="centre">
+        <button class="btn-icone" data-action="edit" data-id="${d.id}" title="Modifier">✏️</button>
+        <button class="btn-icone" data-action="del"  data-id="${d.id}" title="Supprimer">🗑</button></td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="vide">Aucune tâche.</td></tr>`;
+}
+
+function renderPlanning(docs){
+  const parJour = new Map();
+  docs.forEach(d => { const s = {id:d.id, ...d.data()}, k = s.date || "sans";
+    if(!parJour.has(k)) parJour.set(k, []); parJour.get(k).push(s); });
+  $("planning").innerHTML = [...parJour.keys()].sort().map(k => `
+    <div class="jour"><h4>📆 ${k==="sans" ? "Sans date" : fmtLong(k)}</h4><ul>
+    ${parJour.get(k).map(s => `<li><span class="heure">${esc(s.heure||"")}</span>
+      <span class="act">${esc(s.activite)}</span>
+      <button class="btn-icone" data-slot-del="${s.id}" title="Supprimer">🗑</button></li>`).join("")}
+    </ul></div>`).join("") || `<p class="vide">Aucun créneau planifié.</p>`;
+}
+
+/* ---------- Navigation & écoute temps réel ---------- */
+function fermerDetail(){ unsubs.forEach(u=>u()); unsubs = []; idCourant = null; }
+function ouvrirDetail(id){
+  fermerDetail(); idCourant = id;
+  $("vue-liste").hidden = true; $("vue-detail").hidden = false;
+  unsubs.push(onSnapshot(doc(db,"arrivants",id), s => { if(s.exists()){ arrivantCourant = {id:s.id, ...s.data()}; renderEntete(); } }));
+  unsubs.push(onSnapshot(query(collection(db,"arrivants",id,"taches"), orderBy("date"), orderBy("ordre")),
+    s => { docsTaches = s.docs; renderChecklist(); }));
+  unsubs.push(onSnapshot(query(collection(db,"arrivants",id,"planning"), orderBy("date"), orderBy("heure")),
+    s => renderPlanning(s.docs)));
+}
+function retourListe(){ fermerDetail(); $("vue-detail").hidden = true; $("vue-liste").hidden = false; }
+
+/* ---------- Démarrage ---------- */
+function demarrer(){
+  onSnapshot(query(collection(db,"arrivants"), orderBy("creeLe","desc")), s => renderListe(s.docs));
+
+  $("btn-retour").onclick = retourListe;
+  $("btn-nouveau").onclick = () => { $("nv-date").value = toISO(new Date()); $("dlg-nouveau").showModal(); };
+  $("btn-annuler").onclick = () => $("dlg-nouveau").close();
+  $("liste-arrivants").addEventListener("click", e => { const b = e.target.closest("[data-ouvrir]"); if(b) ouvrirDetail(b.dataset.ouvrir); });
+
+  /* Création d'un arrivant (+ modèle standard optionnel) */
+  $("form-nouveau").addEventListener("submit", async e => {
+    e.preventDefault();
+    const nom = $("nv-nom").value.trim(), dateArrivee = $("nv-date").value;
+    if(!nom || !dateArrivee) return;
+    const avecModele = $("nv-modele").checked;
+    const ref = await addDoc(collection(db,"arrivants"), {
+      nom, matricule: $("nv-matricule").value.trim(), dateArrivee,
+      nbTaches: avecModele ? MODELE_TACHES.length : 0, nbFaites: 0, creeLe: serverTimestamp() });
+    if(avecModele){
+      const batch = writeBatch(db);
+      MODELE_TACHES.forEach((t,i) => batch.set(doc(collection(db,"arrivants",ref.id,"taches")),
+        { description:t.desc, date:addDays(dateArrivee,t.off), fait:false, ordre:i }));
+      MODELE_PLANNING.forEach((s,i) => batch.set(doc(collection(db,"arrivants",ref.id,"planning")),
+        { date:addDays(dateArrivee,s.off), heure:s.heure, activite:s.activite, ordre:i }));
+      await batch.commit();
+    }
+    $("dlg-nouveau").close(); ouvrirDetail(ref.id);
+  });
+
+  /* Checklist : cochage, date, édition, suppression */
+  $("corps-checklist").addEventListener("change", async e => {
+    const el = e.target, id = el.dataset.id; if(!id) return;
+    if(el.dataset.action === "fait"){
+      await updateDoc(doc(db,"arrivants",idCourant,"taches",id), { fait: el.checked });
+      await updateDoc(doc(db,"arrivants",idCourant), { nbFaites: increment(el.checked ? 1 : -1) });
+    }
+    if(el.dataset.action === "date"){
+      await updateDoc(doc(db,"arrivants",idCourant,"taches",id), { date: el.value });
+    }
+  });
+  $("corps-checklist").addEventListener("click", async e => {
+    const b = e.target.closest("button[data-action]"); if(!b) return;
+    const id = b.dataset.id;
+    if(b.dataset.action === "edit"){ editionId = id; renderChecklist(); }
+    if(b.dataset.action === "cancel"){ editionId = null; renderChecklist(); }
+    if(b.dataset.action === "save"){
+      await updateDoc(doc(db,"arrivants",idCourant,"taches",id),
+        { description: $("edit-desc").value.trim(), date: $("edit-date").value });
+      editionId = null;
+    }
+    if(b.dataset.action === "del"){
+      if(!confirm("Supprimer cette tâche ?")) return;
+      const fait = docsTaches.find(d=>d.id===id)?.data().fait;
+      await deleteDoc(doc(db,"arrivants",idCourant,"taches",id));
+      await updateDoc(doc(db,"arrivants",idCourant), { nbTaches: increment(-1), nbFaites: increment(fait ? -1 : 0) });
+    }
+  });
+  $("form-tache").addEventListener("submit", async e => {
+    e.preventDefault();
+    const desc = $("tache-desc").value.trim(); if(!desc) return;
+    await addDoc(collection(db,"arrivants",idCourant,"taches"),
+      { description: desc, date: $("tache-date").value || "", fait:false, ordre: Date.now() });
+    await updateDoc(doc(db,"arrivants",idCourant), { nbTaches: increment(1) });
+    e.target.reset();
+  });
+
+  /* Planning : ajout + suppression */
+  $("form-slot").addEventListener("submit", async e => {
+    e.preventDefault();
+    await addDoc(collection(db,"arrivants",idCourant,"planning"),
+      { date: $("slot-date").value, heure: $("slot-heure").value.trim(), activite: $("slot-activite").value.trim(), ordre: Date.now() });
+    e.target.reset();
+  });
+  $("planning").addEventListener("click", async e => {
+    const b = e.target.closest("[data-slot-del]"); if(!b) return;
+    if(confirm("Supprimer ce créneau ?")) await deleteDoc(doc(db,"arrivants",idCourant,"planning",b.dataset.slotDel));
+  });
+
+  /* Suppression complète d'un arrivant */
+  $("btn-suppr-arrivant").onclick = async () => {
+    if(!confirm("Supprimer définitivement cet arrivant et tout son suivi ?")) return;
+    const snaps = await Promise.all([ getDocs(collection(db,"arrivants",idCourant,"taches")),
+                                      getDocs(collection(db,"arrivants",idCourant,"planning")) ]);
+    const batch = writeBatch(db);
+    snaps.forEach(s => s.docs.forEach(d => batch.delete(d.ref)));
+    batch.delete(doc(db,"arrivants",idCourant));
+    await batch.commit(); retourListe();
+  };
+}
+
+if(/COLLEZ|VOTRE_PROJET/.test(firebaseConfig.apiKey + firebaseConfig.projectId)){
+  $("cfg-warning").hidden = false;
+} else { demarrer(); }
+</script>
+</body>
+</html> des nouveaux arrivants
