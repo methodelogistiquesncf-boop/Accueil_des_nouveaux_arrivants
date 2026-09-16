@@ -69,33 +69,42 @@
         </div>
       </div>
 
-      <h3>📋 Prérequis d'arrivée (checklist)</h3>
-      <table class="tableau">
-        <thead><tr><th style="width:60%">Descriptions</th><th style="width:15%">Dates</th><th style="width:10%">Fait Oui/Non</th><th style="width:15%">Actions</th></tr></thead>
-        <tbody id="corps-checklist"></tbody>
-      </table>
-      <form id="form-tache" class="ligne-form">
-        <input type="text" id="tache-desc" placeholder="Nouveau prérequis…" required />
-        <input type="date" id="tache-date" />
-        <button class="btn" type="submit">Ajouter</button>
-      </form>
+      <div id="bloc-checklist">
+        <h3>📋 Prérequis d'arrivée (checklist)</h3>
+        <table class="tableau">
+          <thead><tr><th style="width:60%">Descriptions</th><th style="width:15%">Dates</th><th style="width:10%">Fait Oui/Non</th><th style="width:15%">Actions</th></tr></thead>
+          <tbody id="corps-checklist"></tbody>
+        </table>
+        <form id="form-tache" class="ligne-form">
+          <input type="text" id="tache-desc" placeholder="Nouveau prérequis…" required />
+          <input type="date" id="tache-date" />
+          <button class="btn" type="submit">Ajouter</button>
+        </form>
+      </div>
 
-      <h3>📅 Planning des premiers jours (semaine, vue horaire)</h3>
-      <div class="sem-outils">
-        <button class="btn-secondaire" id="sem-prev" title="Semaine précédente">‹</button>
-        <span id="sem-titre"></span>
-        <button class="btn-secondaire" id="sem-next" title="Semaine suivante">›</button>
-        <button class="btn-secondaire" id="sem-aujourd">Cette semaine</button>
-        <button class="btn" id="sem-ajout">＋ Créneau</button>
-      </div>
-      <div class="sem-conteneur">
-        <div class="sem-entetes" id="sem-entetes"></div>
-        <div class="sem-corps" id="sem-corps"></div>
+      <div id="bloc-planning">
+        <h3>📅 Planning des premiers jours (semaine, vue horaire)</h3>
+        <div class="sem-outils">
+          <button class="btn-secondaire" id="sem-prev" title="Semaine précédente">‹</button>
+          <span id="sem-titre"></span>
+          <button class="btn-secondaire" id="sem-next" title="Semaine suivante">›</button>
+          <button class="btn-secondaire" id="sem-aujourd">Cette semaine</button>
+          <button class="btn" id="sem-ajout">＋ Créneau</button>
+          <button class="btn-secondaire" id="sem-print" title="Imprimer la semaine affichée">🖨️ Imprimer</button>
+          <button class="btn-secondaire" id="sem-mail" title="Capture du planning + ouverture d'Outlook">📧 Envoyer par mail</button>
+        </div>
+        <div id="zone-capture">
+          <div id="entete-impression" class="print-only"></div>
+          <div class="sem-conteneur">
+            <div class="sem-entetes" id="sem-entetes"></div>
+            <div class="sem-corps" id="sem-corps"></div>
+          </div>
+        </div>
         <p id="sem-sans-date" class="vide" style="padding:6px 4px"></p>
+        <p class="aide" style="margin-top:8px">💡 <b>Clic dans une case vide</b> = créer un créneau à cette heure (pas de 30 min) ·
+        <b>Clic sur un bloc</b> = modifier / supprimer · <b>Glisser un bloc</b> = le déplacer (heure ou jour) ·
+        <b>Tirer la poignée striée en bas d'un bloc</b> = étirer / réduire sa durée.</p>
       </div>
-      <p class="aide" style="margin-top:8px">💡 <b>Clic dans une case vide</b> = créer un créneau à cette heure (pas de 30 min) ·
-      <b>Clic sur un bloc</b> = modifier / supprimer · <b>Glisser un bloc</b> = le déplacer (heure ou jour) ·
-      <b>Tirer la poignée striée en bas d'un bloc</b> = étirer / réduire sa durée.</p>
     </section>
 
     <!-- ===== VUE MODÈLE TYPE ===== -->
@@ -166,8 +175,8 @@
 <dialog id="dlg-nouveau">
   <form id="form-nouveau">
     <h3>Nouvel arrivant</h3>
-    <label>Nom complet<input id="nv-nom" required placeholder="Ex : GUEYE NIANA"></label>
-    <label>Numéro de CP<input id="nv-matricule" placeholder="Ex : 0206152D"></label>
+    <label>Nom complet<input id="nv-nom" required placeholder="Ex : Dupond Marcel"></label>
+    <label>Numéro de CP<input id="nv-matricule" placeholder="Ex : 0211152D"></label>
     <label>Date d'arrivée<input id="nv-date" type="date" required></label>
     <label class="coche"><input type="checkbox" id="nv-modele" checked> Charger les propositions type (modèle standard)</label>
     <div class="dlg-actions">
@@ -207,13 +216,32 @@
   </form>
 </dialog>
 
-<!-- ===== Scripts applicatifs (ordre important) ===== -->
+<dialog id="dlg-mail">
+  <form id="form-mail" onsubmit="return false">
+    <h3>📧 Envoyer le planning par mail</h3>
+    <p id="mail-etat" class="aide" style="margin:0 0 12px"></p>
+    <label>Destinataire(s)<input type="text" id="mail-dest" placeholder="prenom.nom@entreprise.fr"></label>
+    <label>Objet<input type="text" id="mail-sujet"></label>
+    <label>Message<textarea id="mail-corps" rows="7" style="width:100%;border:1px solid var(--bord);border-radius:8px;padding:8px;font:inherit"></textarea></label>
+    <div class="dlg-actions" style="flex-wrap:wrap">
+      <button type="button" class="btn btn-gris" id="mail-annuler">Annuler</button>
+      <button type="button" class="btn-secondaire" id="mail-copier">📋 Recopier l'image</button>
+      <button type="button" class="btn-secondaire" id="mail-telecharger">⬇️ Télécharger l'image</button>
+      <button type="button" class="btn" id="mail-outlook-desktop">🖥️ Ouvrir Outlook</button>
+      <button type="button" class="btn-secondaire" id="mail-outlook-web">🌐 Outlook Web</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ===== Scripts (ordre important) ===== -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="js/state.js"></script>
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/renders.js"></script>
 <script src="js/planning.js"></script>
+<script src="js/export.js"></script>
 <script src="js/modele.js"></script>
 <script src="js/users.js"></script>
 <script src="js/detail.js"></script>
