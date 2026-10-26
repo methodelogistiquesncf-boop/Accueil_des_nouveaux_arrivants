@@ -19,10 +19,12 @@ function renderEntete(){
   const total = a.nbTaches||0, faites = a.nbFaites||0, pct = total ? Math.round(faites/total*100) : 0;
   $("jauge-plein").style.width = pct+"%";
   $("jauge-texte").textContent = `${faites}/${total} prérequis faits (${pct} %)`;
-  if(!semDebut){
-    semDebut = lundiDe(a.dateArrivee ? parseISO(a.dateArrivee) : new Date());
-    renderSemaine();
-  }
+if(!semDebut){
+  const lundiAuj     = lundiDe(new Date());
+  const lundiArrivee = a.dateArrivee ? lundiDe(parseISO(a.dateArrivee)) : null;
+  semDebut = (lundiArrivee && lundiArrivee > lundiAuj) ? lundiArrivee : lundiAuj;
+  renderSemaine();
+}
 }
 
 function renderChecklist(){
